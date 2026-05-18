@@ -1,0 +1,26 @@
+{
+  "name": "Bulldog Compete",
+  "short_name": "BD COMPETE",
+  "description": "Brighton Bulldogs Football Gamification System",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#080808",
+  "theme_color": "#8B1C1C",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192x192/8B1C1C/C9A227?text=B",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://via.placeholder.com/512x512/8B1C1C/C9A227?text=B",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["sports", "productivity"],
+  "lang": "en-US"
+}
