@@ -1,0 +1,1833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BD COMPETE">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#8B1C1C">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>BULLDOG COMPETE</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700;900&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --maroon:#8B1C1C;--maroon-d:#5a1010;--maroon-l:#c02a2a;
+  --gold:#C9A227;--gold-l:#f0c535;
+  --black:#080808;--ink:#111;--card:#181818;--border:#2a2a2a;
+  --muted:#555;--text:#e8e2d8;
+  --green:#2a8c4a;--blue:#1a4a8c;--orange:#b55a00;
+  --safe-bottom:env(safe-area-inset-bottom,0px);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden}
+body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+.hdr{background:linear-gradient(135deg,var(--maroon-d),var(--maroon));border-bottom:3px solid var(--gold);padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top,0px));display:flex;align-items:center;justify-content:space-between;flex-shrink:0;box-shadow:0 4px 20px rgba(0,0,0,.7)}
+.hdr-left{display:flex;align-items:center;gap:9px}
+.logo{width:40px;height:40px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:20px;color:var(--maroon-d);flex-shrink:0}
+.hdr-title{font-family:'Bebas Neue';font-size:22px;letter-spacing:4px;color:#fff;line-height:1}
+.hdr-sub{font-family:'Barlow Condensed';font-size:10px;color:var(--gold);letter-spacing:2px}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.week-badge{background:var(--gold);color:var(--maroon-d);font-family:'Bebas Neue';font-size:12px;letter-spacing:2px;padding:3px 9px;border-radius:4px;cursor:pointer;flex-shrink:0}
+.sync-btn{background:none;border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:4px 8px;color:rgba(255,255,255,.7);font-family:'Barlow Condensed';font-size:11px;letter-spacing:1px;cursor:pointer;display:flex;align-items:center;gap:4px}
+.sync-btn.syncing{animation:pulse 1s infinite}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:#4caf50}
+.sync-dot.off{background:#f44}
+.sync-dot.pending{background:var(--gold);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── TABS ── */
+.tabs{background:var(--ink);border-bottom:2px solid var(--maroon);display:flex;overflow-x:auto;flex-shrink:0}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex-shrink:0;padding:10px 14px;font-family:'Bebas Neue';font-size:13px;letter-spacing:2px;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:.2s;white-space:nowrap}
+.tab.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* ── SCROLL AREA ── */
+.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding-bottom:calc(20px + var(--safe-bottom))}
+.page{display:none;padding:14px;max-width:680px;margin:0 auto;animation:fadeUp .2s ease}
+.page.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── SECTION TITLE ── */
+.stitle{font-family:'Bebas Neue';font-size:20px;letter-spacing:3px;color:var(--gold);margin:18px 0 10px;display:flex;align-items:center;gap:10px}
+.stitle::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--gold),transparent);opacity:.2}
+
+/* ── STAT CARDS ── */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 8px;text-align:center}
+.stat-card .val{font-family:'Bebas Neue';font-size:26px;color:var(--gold);line-height:1}
+.stat-card .lbl{font-family:'Barlow Condensed';font-size:9px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-top:2px}
+
+/* ── LEADERBOARD ── */
+.lb-filters{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
+.lb-filter{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:4px 11px;font-family:'Barlow Condensed';font-size:11px;letter-spacing:1px;cursor:pointer;transition:.2s;color:var(--muted)}
+.lb-filter.active{background:var(--maroon);border-color:var(--maroon);color:#fff}
+.lb-list{display:flex;flex-direction:column;gap:5px}
+.lb-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:10px;transition:.15s}
+.lb-item.gold-rank{border-color:var(--gold);background:linear-gradient(90deg,rgba(201,162,39,.08),var(--card))}
+.lb-item.silver-rank{border-color:#aaa;background:linear-gradient(90deg,rgba(170,170,170,.05),var(--card))}
+.lb-item.bronze-rank{border-color:#c87d00;background:linear-gradient(90deg,rgba(200,125,0,.05),var(--card))}
+.rank-num{font-family:'Bebas Neue';font-size:20px;width:26px;text-align:center;flex-shrink:0;color:var(--muted)}
+.rank-num.r1{color:var(--gold-l)}.rank-num.r2{color:#ccc}.rank-num.r3{color:#c87d00}
+.lb-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:13px;flex-shrink:0;color:#fff}
+.lb-info{flex:1;min-width:0}
+.lb-name{font-family:'Barlow Condensed';font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lb-meta{font-family:'Barlow';font-size:10px;color:var(--muted)}
+.lb-pts{font-family:'Bebas Neue';font-size:20px;color:var(--gold);flex-shrink:0;text-align:right;line-height:1}
+.lb-pts small{display:block;font-size:9px;font-family:'Barlow Condensed';color:var(--muted);letter-spacing:1px}
+.trend{font-size:11px;flex-shrink:0;font-family:'Barlow Condensed';font-weight:700;width:30px;text-align:right}
+.trend.up{color:#4caf50}.trend.dn{color:#f44}.trend.eq{color:var(--muted)}
+
+/* ── GROUP BOARD ── */
+.group-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px}
+.group-card-hdr{padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
+.group-name{font-family:'Bebas Neue';font-size:19px;letter-spacing:2px}
+.group-pts{font-family:'Bebas Neue';font-size:26px;color:var(--gold)}
+.group-pts small{font-size:10px;font-family:'Barlow Condensed';color:var(--muted);letter-spacing:1px;display:block;text-align:right}
+.group-bar-wrap{height:4px;background:var(--border)}
+.group-bar{height:4px;transition:width 1s ease}
+.group-members{padding:7px 14px 10px;font-family:'Barlow';font-size:11px;color:var(--muted);border-top:1px solid var(--border)}
+
+/* ── INPUT ── */
+.input-section{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.input-label{font-family:'Barlow Condensed';font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;display:block}
+.select-field{width:100%;background:#111;border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:'Barlow Condensed';font-size:15px;appearance:none;-webkit-appearance:none;outline:none;font-size:16px}
+.select-field:focus{border-color:var(--maroon)}
+.cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;margin:8px 0}
+.cat-btn{background:#111;border:1px solid var(--border);border-radius:8px;padding:11px 9px;display:flex;align-items:center;gap:7px;cursor:pointer;transition:.2s;-webkit-user-select:none;user-select:none}
+.cat-btn:active{transform:scale(.97)}
+.cat-btn.selected{border-color:var(--gold);background:rgba(201,162,39,.08)}
+.cat-icon{font-size:18px;width:24px;text-align:center}
+.cat-text{font-family:'Barlow Condensed';font-size:13px;letter-spacing:.5px}
+.action-list{display:flex;flex-direction:column;gap:4px}
+.action-row{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;border-radius:6px;border:1px solid var(--border);cursor:pointer;transition:.2s;-webkit-user-select:none;user-select:none}
+.action-row:active{transform:scale(.98)}
+.action-row.selected{border-color:var(--gold);background:rgba(201,162,39,.08)}
+.action-row-label{font-family:'Barlow';font-size:13px}
+.action-row-pts{font-family:'Bebas Neue';font-size:15px}
+.pts-pos{color:#4caf50}.pts-neg{color:#f44}
+.submit-btn{width:100%;background:var(--maroon);border:none;border-radius:8px;padding:14px;font-family:'Bebas Neue';font-size:19px;letter-spacing:3px;color:#fff;cursor:pointer;transition:.2s;margin-top:10px;-webkit-user-select:none;user-select:none}
+.submit-btn:active{transform:scale(.98);background:var(--maroon-l)}
+.submit-btn:disabled{opacity:.35;cursor:default}
+.submit-btn.loading::after{content:' ...'}
+
+/* ── ACTIVITY ── */
+.activity-list{display:flex;flex-direction:column;gap:5px}
+.activity-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:9px}
+.act-icon{font-size:16px;width:22px;text-align:center;flex-shrink:0}
+.act-info{flex:1;min-width:0}
+.act-name{font-family:'Barlow Condensed';font-size:13px;font-weight:700}
+.act-cat{font-family:'Barlow';font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.act-pts{font-family:'Bebas Neue';font-size:17px;flex-shrink:0}
+.act-pts.pos{color:#4caf50}.act-pts.neg{color:#f44}
+.act-time{font-family:'Barlow';font-size:9px;color:var(--muted);flex-shrink:0}
+.queue-badge{background:rgba(201,162,39,.15);border:1px solid var(--gold);border-radius:4px;padding:1px 5px;font-family:'Barlow Condensed';font-size:9px;color:var(--gold);letter-spacing:1px}
+
+/* ── BADGES ── */
+.badge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+.badge-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center;transition:.2s}
+.badge-card.earned{border-color:var(--gold)}
+.badge-card.locked{opacity:.3}
+.badge-emoji{font-size:28px;display:block;margin-bottom:4px}
+.badge-name{font-family:'Barlow Condensed';font-size:11px;font-weight:700;letter-spacing:.3px;display:block}
+.badge-desc{font-family:'Barlow';font-size:9px;color:var(--muted);margin-top:2px;line-height:1.3}
+
+/* ── COACHES ── */
+.coach-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:7px;display:flex;align-items:center;gap:10px}
+.coach-ava{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue';font-size:18px;color:#fff;flex-shrink:0}
+.coach-info{flex:1;min-width:0}
+.coach-name{font-family:'Barlow Condensed';font-size:16px;font-weight:700}
+.coach-role{font-family:'Barlow';font-size:10px;color:var(--muted)}
+.coach-stats{display:flex;gap:12px;margin-top:4px}
+.cs{text-align:center}.cs .n{font-family:'Bebas Neue';font-size:15px;color:var(--gold)}.cs .l{font-family:'Barlow';font-size:8px;color:var(--muted);text-transform:uppercase}
+.coach-pts{font-family:'Bebas Neue';font-size:24px;color:var(--gold);flex-shrink:0;text-align:right}
+
+/* ── GUIDE ── */
+.guide-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:9px}
+.guide-hdr{display:flex;align-items:center;gap:7px;margin-bottom:7px}
+.guide-icon{font-size:20px;width:26px;text-align:center}
+.guide-title{font-family:'Bebas Neue';font-size:16px;letter-spacing:2px}
+.guide-color{width:5px;height:28px;border-radius:3px;flex-shrink:0}
+.guide-rows{display:flex;flex-direction:column}
+.guide-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border)}
+.guide-row:last-child{border-bottom:none}
+.guide-row-label{font-family:'Barlow';font-size:12px}
+.guide-row-pts{font-family:'Bebas Neue';font-size:14px}
+
+/* ── SETTINGS ── */
+.settings-section{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.settings-title{font-family:'Bebas Neue';font-size:16px;letter-spacing:2px;color:var(--gold);margin-bottom:10px}
+.text-input{width:100%;background:#111;border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:'Barlow';font-size:14px;outline:none;font-size:16px}
+.text-input:focus{border-color:var(--maroon)}
+.text-input::placeholder{color:var(--muted)}
+.settings-btn{background:#111;border:1px solid var(--border);border-radius:6px;padding:10px 16px;color:var(--text);font-family:'Barlow Condensed';font-size:14px;letter-spacing:1px;cursor:pointer;transition:.2s;width:100%;text-align:left;margin-top:6px}
+.settings-btn:active{background:var(--maroon);color:#fff}
+.settings-btn.danger{border-color:#6a0000;color:#f44}
+.status-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-family:'Barlow Condensed';font-size:11px;letter-spacing:1px;margin-top:8px}
+.status-pill.ok{background:rgba(42,140,74,.15);border:1px solid rgba(42,140,74,.3);color:#4caf50}
+.status-pill.err{background:rgba(200,40,40,.15);border:1px solid rgba(200,40,40,.3);color:#f44}
+.status-pill.warn{background:rgba(201,162,39,.15);border:1px solid rgba(201,162,39,.3);color:var(--gold)}
+.roster-editor{display:flex;flex-direction:column;gap:5px;max-height:300px;overflow-y:auto}
+.roster-row{display:flex;gap:6px;align-items:center}
+.roster-row input{flex:1;background:#0d0d0d;border:1px solid var(--border);border-radius:5px;padding:7px 8px;color:var(--text);font-family:'Barlow';font-size:13px;outline:none;font-size:16px}
+.roster-row select{background:#0d0d0d;border:1px solid var(--border);border-radius:5px;padding:7px 6px;color:var(--text);font-family:'Barlow Condensed';font-size:12px;outline:none;width:60px;font-size:16px}
+.roster-row .del{background:none;border:1px solid #6a0000;border-radius:5px;padding:7px 9px;color:#f44;cursor:pointer;font-size:13px}
+
+/* ── INSTALL BANNER ── */
+.install-banner{background:linear-gradient(135deg,var(--maroon-d),var(--maroon));border:1px solid var(--gold);border-radius:10px;padding:14px;margin-bottom:12px;display:none}
+.install-banner.show{display:flex;gap:12px;align-items:center}
+.install-text{flex:1;font-family:'Barlow Condensed';font-size:13px;letter-spacing:.3px}
+.install-text strong{display:block;font-family:'Bebas Neue';font-size:17px;letter-spacing:2px;color:var(--gold)}
+.install-btn{background:var(--gold);color:var(--maroon-d);border:none;border-radius:6px;padding:8px 14px;font-family:'Bebas Neue';font-size:15px;letter-spacing:2px;cursor:pointer;flex-shrink:0}
+
+/* ── OFFLINE BANNER ── */
+.offline-bar{background:#6a0000;padding:6px 14px;text-align:center;font-family:'Barlow Condensed';font-size:12px;letter-spacing:1px;color:#ffaaaa;display:none;flex-shrink:0}
+.offline-bar.show{display:block}
+
+/* ── MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:500;display:none;align-items:flex-end;justify-content:center;padding-bottom:var(--safe-bottom)}
+.modal-bg.open{display:flex;animation:fadeUp .2s ease}
+.modal{background:#1a1a1a;border:1px solid var(--gold);border-top-left-radius:16px;border-top-right-radius:16px;padding:20px;width:100%;max-width:480px;max-height:80vh;overflow-y:auto}
+.modal h2{font-family:'Bebas Neue';font-size:22px;letter-spacing:3px;color:var(--gold);margin-bottom:14px}
+.modal-close{float:right;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;margin-top:-4px;padding:0 4px}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:calc(24px + var(--safe-bottom));left:50%;transform:translateX(-50%) translateY(100px);background:var(--card);border:1px solid var(--gold);border-radius:8px;padding:10px 18px;font-family:'Bebas Neue';font-size:15px;letter-spacing:2px;color:#fff;z-index:999;transition:transform .3s;text-align:center;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{border-color:#4caf50}
+.toast.error{border-color:#f44}
+
+/* ── MISC ── */
+.empty{text-align:center;padding:32px 20px;color:var(--muted);font-family:'Barlow Condensed';font-size:13px;letter-spacing:1px}
+</style>
+</head>
+<body>
+
+<!-- OFFLINE BAR -->
+<div class="offline-bar" id="offline-bar">📵 OFFLINE — points queued, will sync when connected</div>
+
+<!-- HEADER -->
+<div class="hdr">
+  <div class="hdr-left">
+    <div class="logo">B</div>
+    <div>
+      <div class="hdr-title">BULLDOG COMPETE</div>
+      <div class="hdr-sub">Brighton Football · 2026</div>
+    </div>
+  </div>
+  <div class="hdr-right">
+    <div class="sync-btn" onclick="manualSync()" id="sync-btn">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">SYNC</span>
+    </div>
+    <div class="week-badge" onclick="showModal('week-modal')" id="week-badge">WK 1</div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="goTab('board',this)">🏆 BOARD</div>
+  <div class="tab" onclick="goTab('input',this)">➕ LOG</div>
+  <div class="tab" onclick="goTab('groups',this)">🐾 GROUPS</div>
+  <div class="tab" onclick="goTab('coaches',this)">📋 COACHES</div>
+  <div class="tab" onclick="goTab('badges',this)">🎖 BADGES</div>
+  <div class="tab" onclick="goTab('system',this)">📖 SYSTEM</div>
+  <div class="tab" onclick="goTab('settings',this)">⚙️ SETUP</div>
+</div>
+
+<!-- SCROLL AREA -->
+<div class="scroll-area">
+
+<!-- ═══ BOARD ═══ -->
+<div id="page-board" class="page active">
+  <div class="install-banner" id="install-banner">
+    <div class="install-text">
+      <strong>ADD TO HOME SCREEN</strong>
+      Install Bulldog Compete as an app on your phone
+    </div>
+    <button class="install-btn" onclick="installApp()">INSTALL</button>
+  </div>
+
+  <div class="stat-row" style="margin-top:14px">
+    <div class="stat-card"><div class="val" id="s-players">22</div><div class="lbl">Players</div></div>
+    <div class="stat-card"><div class="val" id="s-logs">0</div><div class="lbl">Logs Today</div></div>
+    <div class="stat-card"><div class="val" id="s-leader">—</div><div class="lbl">Leader</div></div>
+  </div>
+
+  <div class="lb-filters">
+    <div class="lb-filter active" onclick="filterLB('all',this)">ALL</div>
+    <div class="lb-filter" onclick="filterLB('alpha',this)">A–Z</div>
+    <div class="lb-filter" onclick="filterLB('practice',this)">⚡</div>
+    <div class="lb-filter" onclick="filterLB('attendance',this)">📋</div>
+    <div class="lb-filter" onclick="filterLB('academic',this)">📚</div>
+    <div class="lb-filter" onclick="filterLB('strength',this)">💪</div>
+    <div class="lb-filter" onclick="filterLB('compete',this)">🏈</div>
+    <div class="lb-filter" onclick="filterLB('culture',this)">🐾</div>
+    <div class="lb-filter" onclick="filterLB('behavior',this)">🏫</div>
+    <div class="lb-filter" onclick="filterLB('service',this)">🤝</div>
+  </div>
+  <div class="lb-list" id="lb-list"></div>
+</div>
+
+<!-- ═══ LOG POINTS ═══ -->
+<div id="page-input" class="page">
+  <div class="stitle">LOG POINTS</div>
+  <div class="input-section">
+    <span class="input-label">Player</span>
+    <select class="select-field" id="sel-player" onchange="checkSubmit()"></select>
+  </div>
+  <div class="input-section">
+    <span class="input-label">Category</span>
+    <div class="cat-grid" id="cat-grid"></div>
+  </div>
+  <div class="input-section" id="action-section" style="display:none">
+    <span class="input-label">Action</span>
+    <div class="action-list" id="action-list"></div>
+    <button class="submit-btn" id="submit-btn" onclick="submitPoints()" disabled>LOG POINTS</button>
+  </div>
+
+  <div class="stitle">TODAY'S LOG</div>
+  <div class="activity-list" id="activity-list"><div class="empty">No activity yet.</div></div>
+</div>
+
+<!-- ═══ GROUPS ═══ -->
+<div id="page-groups" class="page">
+  <div class="stitle">GROUP BATTLE</div>
+  <div id="group-lb"></div>
+  <div class="stitle">BREAKDOWN</div>
+  <div id="group-detail"></div>
+</div>
+
+<!-- ═══ COACHES ═══ -->
+<div id="page-coaches" class="page">
+  <div class="stitle">COACH BOARD</div>
+  <p style="font-family:'Barlow';font-size:12px;color:var(--muted);margin-bottom:12px">Coach points = their group's total points.</p>
+  <div id="coach-list"></div>
+  <div class="stitle">HOW COACHES EARN</div>
+  <div class="guide-card">
+    <div class="guide-rows">
+      <div class="guide-row"><span class="guide-row-label">Group wins the week (top pts)</span><span class="guide-row-pts pts-pos">+50</span></div>
+      <div class="guide-row"><span class="guide-row-label">Player in group earns a badge</span><span class="guide-row-pts pts-pos">+10</span></div>
+      <div class="guide-row"><span class="guide-row-label">Group GPA ≥ 3.3 semester</span><span class="guide-row-pts pts-pos">+25</span></div>
+      <div class="guide-row"><span class="guide-row-label">100% attendance week for group</span><span class="guide-row-pts pts-pos">+20</span></div>
+      <div class="guide-row"><span class="guide-row-label">Player reaches ELITE rank</span><span class="guide-row-pts pts-pos">+15</span></div>
+      <div class="guide-row"><span class="guide-row-label">Player reaches CAPTAIN rank</span><span class="guide-row-pts pts-pos">+10</span></div>
+      <div class="guide-row"><span class="guide-row-label">Group wins Pack Award 3 weeks straight</span><span class="guide-row-pts pts-pos">+50</span></div>
+      <div class="guide-row"><span class="guide-row-label">Group discipline incident</span><span class="guide-row-pts pts-neg">-15</span></div>
+      <div class="guide-row"><span class="guide-row-label">Player misses mandatory event</span><span class="guide-row-pts pts-neg">-10</span></div>
+      <div class="guide-row"><span class="guide-row-label">Player gets academic ineligibility warning</span><span class="guide-row-pts pts-neg">-20</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BADGES ═══ -->
+<div id="page-badges" class="page">
+  <div class="stitle">BADGES & AWARDS</div>
+  <div class="badge-grid" id="badge-grid"></div>
+</div>
+
+<!-- ═══ SYSTEM ═══ -->
+<div id="page-system" class="page">
+  <div class="stitle">POINT SYSTEM</div>
+  <div id="system-guide"></div>
+  <div class="stitle">RANK TIERS</div>
+  <div class="guide-card">
+    <div class="guide-rows">
+      <div class="guide-row"><span class="guide-row-label">🔘 SCOUT</span><span style="font-family:'Barlow';font-size:11px;color:var(--muted)">0 pts · Starting rank</span></div>
+      <div class="guide-row"><span class="guide-row-label">⚪ WALK-ON</span><span style="font-family:'Barlow';font-size:11px;color:#aaa">25 pts</span></div>
+      <div class="guide-row"><span class="guide-row-label">🟡 VARSITY</span><span style="font-family:'Barlow';font-size:11px;color:var(--gold)">75 pts</span></div>
+      <div class="guide-row"><span class="guide-row-label">🔴 STARTER</span><span style="font-family:'Barlow';font-size:11px;color:var(--maroon-l)">150 pts</span></div>
+      <div class="guide-row"><span class="guide-row-label">⭐ CAPTAIN</span><span style="font-family:'Barlow';font-size:11px;color:var(--gold-l)">300 pts</span></div>
+      <div class="guide-row"><span class="guide-row-label">🏆 ELITE</span><span style="font-family:'Barlow';font-size:11px;color:#f0c535">500 pts · Season legend</span></div>
+    </div>
+  </div>
+  <div class="stitle">WEEKLY AWARDS</div>
+  <div class="guide-card">
+    <div class="guide-rows">
+      <div class="guide-row"><span class="guide-row-label">🦴 Bulldog of the Week</span><span style="font-family:'Barlow';font-size:10px;color:var(--muted)">Top overall pts</span></div>
+      <div class="guide-row"><span class="guide-row-label">📚 Classroom Bulldog</span><span style="font-family:'Barlow';font-size:10px;color:var(--muted)">Top academic pts</span></div>
+      <div class="guide-row"><span class="guide-row-label">💪 Iron Bulldog</span><span style="font-family:'Barlow';font-size:10px;color:var(--muted)">Top strength pts</span></div>
+      <div class="guide-row"><span class="guide-row-label">⚡ Dog of the Day</span><span style="font-family:'Barlow';font-size:10px;color:var(--muted)">Best single practice rep</span></div>
+      <div class="guide-row"><span class="guide-row-label">🤝 RKG of the Week</span><span style="font-family:'Barlow';font-size:10px;color:var(--muted)">Top culture + service pts</span></div>
+      <div class="guide-row"><span class="guide-row-label">✅ Zero Flags Award</span><span style="font-family:'Barlow';font-size:10px;color:var(--muted)">Full week, zero negatives</span></div>
+      <div class="guide-row"><span class="guide-row-label">🐾 Pack Award</span><span style="font-family:'Barlow';font-size:10px;color:var(--muted)">Top group of the week</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SETTINGS ═══ -->
+<div id="page-settings" class="page">
+  <div class="stitle">GOOGLE SHEETS SETUP</div>
+  <div class="settings-section">
+    <div class="settings-title">APPS SCRIPT URL</div>
+    <p style="font-family:'Barlow';font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5">Paste your Google Apps Script Web App URL here to enable live spreadsheet sync.</p>
+    <input type="url" class="text-input" id="script-url" placeholder="https://script.google.com/macros/s/..." value="">
+    <div id="sync-status"></div>
+    <button class="settings-btn" onclick="testConnection()">TEST CONNECTION</button>
+    <button class="settings-btn" onclick="saveScriptUrl()">SAVE URL</button>
+    <button class="settings-btn" onclick="forceSyncAll()">FORCE FULL SYNC NOW</button>
+    <button class="settings-btn" onclick="pullFromSheets(true)">⬇ PULL FROM SHEETS</button>
+  </div>
+
+  <div class="stitle">COACHING STAFF EDITOR</div>
+  <div class="settings-section">
+    <div class="settings-title">COACHES</div>
+    <p style="font-family:'Barlow';font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Edit names, roles, and position groups. Changes apply immediately to the leaderboard and coach competition board.</p>
+    <div class="roster-editor" id="coach-editor"></div>
+    <button class="settings-btn" onclick="addCoachRow()" style="margin-top:8px">+ ADD COACH</button>
+    <button class="settings-btn" onclick="saveCoaches()" style="background:rgba(139,28,28,.15);border-color:var(--maroon)">SAVE STAFF</button>
+  </div>
+
+  <div class="stitle">ATHLETE CHECK-IN CODE WORD</div>
+  <div class="settings-section">
+    <div class="settings-title">SESSION CODE WORD</div>
+    <p style="font-family:'Barlow';font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">Set a code word for each session. Athletes must enter it to check in. Change it each session to prevent athletes from checking in remotely. Post it at the session location only.</p>
+    <span class="input-label">Current Code Word</span>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <input type="text" class="text-input" id="code-word-input" placeholder="e.g. DAWG · GRIND · COMPETE"
+        style="text-transform:uppercase;letter-spacing:3px;font-family:'Bebas Neue';font-size:20px;text-align:center;flex:1"
+        oninput="this.value=this.value.toUpperCase()">
+    </div>
+    <button class="settings-btn" onclick="saveCodeWord()" style="background:rgba(139,28,28,.15);border-color:var(--maroon)">SET CODE WORD</button>
+    <div id="code-status" style="font-family:'Barlow Condensed';font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:.5px"></div>
+  </div>
+
+  <div class="stitle">ATTENDANCE LEADERBOARD</div>
+  <div class="settings-section">
+    <div class="settings-title">OFF-SEASON COMPETE BOARD</div>
+    <p style="font-family:'Barlow';font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5">May 18 – July 22. Percentage = points earned ÷ total possible to date. Top % determines equipment and jersey number selection order.</p>
+    <div id="attend-lb" style="max-height:360px;overflow-y:auto"></div>
+  </div>
+
+  <div class="stitle">ROSTER EDITOR</div>
+  <div class="settings-section">
+    <div class="settings-title">PLAYERS</div>
+    <div class="roster-editor" id="roster-editor"></div>
+    <button class="settings-btn" onclick="addRosterRow()" style="margin-top:8px">+ ADD PLAYER</button>
+    <button class="settings-btn" onclick="saveRoster()" style="background:rgba(139,28,28,.15);border-color:var(--maroon)">SAVE ROSTER</button>
+  </div>
+
+  <div class="stitle">WEEK MANAGEMENT</div>
+  <div class="settings-section">
+    <div class="settings-title">ADVANCE WEEK</div>
+    <p style="font-family:'Barlow';font-size:12px;color:var(--muted);margin-bottom:8px">Advancing the week takes a weekly snapshot to Sheets, resets weekly points, and logs the new week.</p>
+    <button class="settings-btn" onclick="showModal('week-modal')">SET / ADVANCE WEEK</button>
+    <button class="settings-btn" onclick="exportCSV()">EXPORT CSV (MANUAL BACKUP)</button>
+    <button class="settings-btn" onclick="document.getElementById('csv-import-input').click()">IMPORT CSV (RESTORE ROSTER)</button>
+    <input type="file" id="csv-import-input" accept=".csv" style="display:none" onchange="importCSV(event)">
+    <div id="import-status" style="font-family:'Barlow Condensed';font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:.5px"></div>
+  </div>
+
+  <div class="stitle">DANGER ZONE</div>
+  <div class="settings-section">
+    <button class="settings-btn danger" onclick="confirmResetPoints()">RESET POINTS ONLY (KEEP ROSTER)</button>
+    <button class="settings-btn danger" onclick="confirmReset()" style="margin-top:6px;opacity:.6">RESET EVERYTHING (WIPE ALL DATA)</button>
+  </div>
+</div>
+
+</div><!-- end scroll-area -->
+
+<!-- ══ MODALS ══ -->
+<div class="modal-bg" id="week-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('week-modal')">✕</button>
+    <h2>SET WEEK</h2>
+    <span class="input-label">Current Week</span>
+    <select class="select-field" id="week-sel" style="margin-bottom:14px">
+      <option value="1">Week 1 — May 1</option><option value="2">Week 2 — May 5</option>
+      <option value="3">Week 3 — May 12</option><option value="4">Week 4 — May 19</option>
+      <option value="5">Week 5 — May 26</option><option value="6">Week 6 — June 2</option>
+      <option value="7">Week 7 — June 9</option><option value="8">Week 8 — June 16</option>
+      <option value="9">Week 9 — June 23</option><option value="10">Week 10 — June 30</option>
+      <option value="11">Week 11 — July 7</option><option value="12">Week 12 — July 14</option>
+      <option value="13">UNC CAMP — July 19</option><option value="14">Week 14 — Aug 3</option>
+      <option value="15">Week 15 — Aug 10</option><option value="16">Week 16 — Aug 17</option>
+      <option value="17">Week 17 — Aug 24</option>
+    </select>
+    <button class="submit-btn" onclick="advanceWeek()">LOCK IN WEEK</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════
+// CONSTANTS
+// ══════════════════════════════════════════════════
+const HARDCODED_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbytzO2pN74pqnzCnwdtMur7irf_jdj_ytvr86ZINAMqFE9SPVCqi-3i-0XCqO5aIX-R6Q/exec';
+
+const POSITIONS = {QB:'#8B1C1C',WR:'#1a4a8c',OL:'#5a1a8c',RB:'#0a6666',TE:'#b55a00',DB:'#2a6a2a',LB:'#6a4a00',DL:'#4a0a4a',K:'#006a6a'};
+
+const GROUPS = [
+  {id:'skill',    name:'SKILL GROUP', desc:'QB · WR · RB · TE', positions:['QB','WR','RB','TE'], color:'#8B1C1C'},
+  {id:'trenches', name:'TRENCHES',    desc:'OL · DL',           positions:['OL','DL'],           color:'#5a1a8c'},
+  {id:'defense',  name:'DEFENSE',     desc:'DB · LB',           positions:['DB','LB'],           color:'#0a6666'},
+];
+
+const CATEGORIES = [
+  // ── 1. PRACTICE ──────────────────────────────────
+  {id:'practice', icon:'⚡', label:'Practice', color:'#c9a227', actions:[
+    {label:'A+ Grade — all reps correct, perfect alignment',  pts:5},
+    {label:'A Grade — minor errors only, competed hard',      pts:4},
+    {label:'B Grade — some errors, effort present',           pts:3},
+    {label:'C Grade — multiple errors or inconsistent effort',pts:1},
+    {label:'Dog of the Day rep — best rep of the day',        pts:10},
+    {label:'Loafed a rep — visible lack of effort',           pts:-1},
+    {label:'Wrong alignment — lined up incorrectly',          pts:-1},
+    {label:'Missed assignment — wrong gap, read, or route',   pts:-2},
+  ]},
+  // ── 2. ATTENDANCE ────────────────────────────────
+  {id:'attendance', icon:'📋', label:'Attendance', color:'#1a4a7a', actions:[
+    {label:'Present — on time, ready to work',                pts:2},
+    {label:'Full week — 100% attendance all sessions',        pts:5},
+    {label:'Late 1–5 min — unexcused',                        pts:-1},
+    {label:'Late 5+ min — unexcused',                         pts:-2},
+    {label:'Absent — excused (documented)',                    pts:0},
+    {label:'Absent — unexcused, no contact',                  pts:-5},
+    {label:'Absent — unexcused, lied about reason',           pts:-10},
+    {label:'Left early — without permission',                 pts:-3},
+  ]},
+  // ── 3. ACADEMICS ─────────────────────────────────
+  {id:'academic', icon:'📚', label:'Academic', color:'#2a6a2a', actions:[
+    {label:'A on test, quiz, or project',                     pts:5},
+    {label:'B on test, quiz, or project',                     pts:3},
+    {label:'C on test, quiz, or project',                     pts:1},
+    {label:'GPA ≥ 3.5 for the semester',                      pts:25},
+    {label:'GPA ≥ 3.3 for the semester',                      pts:15},
+    {label:'GPA ≥ 3.3 sustained this week',                   pts:10},
+    {label:'Perfect class attendance this week',              pts:5},
+    {label:'Tutoring session attended (verified)',             pts:5},
+    {label:'Study hall — full session completed',             pts:3},
+    {label:'Missing or late assignment',                      pts:-3},
+    {label:'Failed test or quiz (below 60%)',                 pts:-5},
+    {label:'Academic ineligibility warning',                  pts:-15},
+  ]},
+  // ── 4. STRENGTH ──────────────────────────────────
+  {id:'strength', icon:'💪', label:'Strength', color:'#8c4a1a', actions:[
+    {label:'New PR — verified by coach',                      pts:10},
+    {label:'Maxed out — full effort entire session',          pts:5},
+    {label:'Strong session — on pace, no shortcuts',          pts:3},
+    {label:'Completed session — showed up, got work in',      pts:2},
+    {label:'Full week — 100% weights attendance',             pts:5},
+    {label:'Encouraged teammate during session',              pts:3},
+    {label:'Missed weights — unexcused',                      pts:-5},
+    {label:'Quit early — did not finish session',             pts:-3},
+    {label:'Poor effort — going through the motions',         pts:-2},
+  ]},
+  // ── 5. COMPETE ───────────────────────────────────
+  {id:'compete', icon:'🏈', label:'Compete', color:'#1a4a8c', actions:[
+    {label:'TD or explosive play (15+ yards)',                 pts:10},
+    {label:'Turnover forced — INT, fumble, strip',            pts:8},
+    {label:'Zero-drop session — caught everything',           pts:5},
+    {label:'Correct reads executed on all concepts',          pts:5},
+    {label:'Competed hard despite adverse result',            pts:3},
+    {label:'Key block that sprung the run',                   pts:3},
+    {label:'Dropped catchable ball',                          pts:-2},
+    {label:'Wrong read — incorrect ZMK if-then decision',     pts:-2},
+    {label:'Mental error — lineup or assignment mistake',     pts:-3},
+    {label:'Quit — stopped competing mid-play or mid-game',   pts:-5},
+  ]},
+  // ── 6. CULTURE ───────────────────────────────────
+  {id:'culture', icon:'🐾', label:'Culture', color:'#5a1a8c', actions:[
+    {label:'Integrity First — did the right thing publicly',  pts:10},
+    {label:'Max Effort — coach calls it out by name',         pts:8},
+    {label:'Always Accountable — owned mistake, no excuses',  pts:8},
+    {label:'Led teammate through adversity',                  pts:8},
+    {label:'First in, last out — without being told',         pts:5},
+    {label:'RKG moment in community (verified)',              pts:5},
+    {label:'Encouraged a struggling teammate publicly',       pts:5},
+    {label:'Put team above self (documented sacrifice)',      pts:5},
+    {label:'Discipline issue — any formal consequence',       pts:-10},
+    {label:'Disrespected teammate or coach',                  pts:-8},
+    {label:'Quit mentality — expressed verbally or physically',pts:-8},
+    {label:'Threw teammate under the bus publicly',           pts:-5},
+    {label:'Complained about role or playing time',           pts:-3},
+  ]},
+  // ── 7. IN-SCHOOL BEHAVIOR ────────────────────────
+  {id:'behavior', icon:'🏫', label:'Behavior', color:'#0a5555', actions:[
+    {label:'Teacher recognition — above and beyond in class', pts:5},
+    {label:'Helped classmate — verified by teacher',          pts:3},
+    {label:'Positive office visit — recognized by admin',     pts:5},
+    {label:'Tardy to class — unexcused',                      pts:-2},
+    {label:'Disruptive in class — teacher report',            pts:-5},
+    {label:'Office referral — behavioral',                    pts:-10},
+    {label:'In-school suspension (ISS)',                      pts:-15},
+    {label:'Out-of-school suspension (OSS)',                  pts:-25},
+    {label:'Disrespected school staff',                       pts:-10},
+  ]},
+  // ── 8. COMMUNITY SERVICE ─────────────────────────
+  {id:'service', icon:'🤝', label:'Service', color:'#1a6a3a', actions:[
+    {label:'Led a community event — spoke, organized, ran it',pts:25},
+    {label:'Bullpup Camp — full session volunteered',          pts:15},
+    {label:'Mentored younger player (JV/youth, documented)',  pts:10},
+    {label:'Youth Night — present and engaged',               pts:10},
+    {label:'Community event — program-organized',             pts:10},
+    {label:'Field Day (Northeast Elementary)',                 pts:10},
+    {label:'Showed up — present at program community event',  pts:5},
+    {label:'Team Dinner — helped set up or clean up',         pts:5},
+    {label:'Committed and no-showed — no call, no show',      pts:-10},
+  ]},
+];
+
+const BADGES = [
+  {id:'first_blood',  icon:'🎯', name:'FIRST POINTS',    desc:'Logged first points',                  cat:'all'},
+  {id:'practice_ace', icon:'⚡', name:'PRACTICE ACE',    desc:'5 A-grades in a row',                  cat:'practice'},
+  {id:'perfect_week', icon:'📋', name:'PERFECT WEEK',    desc:'100% attendance full week',             cat:'attendance'},
+  {id:'honor_roll',   icon:'📚', name:'HONOR ROLL',      desc:'GPA ≥ 3.3 three weeks running',        cat:'academic'},
+  {id:'iron',         icon:'💪', name:'IRON BULLDOG',    desc:'New PR three separate times',           cat:'strength'},
+  {id:'playmaker',    icon:'🏈', name:'PLAYMAKER',       desc:'3 big plays in a single week',         cat:'compete'},
+  {id:'culture_king', icon:'🐾', name:'CULTURE KING',    desc:'5 culture entries, all positive',      cat:'culture'},
+  {id:'rkg',          icon:'🤝', name:'RIGHT KINDA GUY', desc:'Top culture + service pts in a week',  cat:'service'},
+  {id:'classroom',    icon:'🏫', name:'CLASSROOM LEADER',desc:'Teacher recognition two weeks running', cat:'behavior'},
+  {id:'servant',      icon:'🌟', name:'SERVANT LEADER',  desc:'3 community service events in a month',cat:'service'},
+  {id:'iron_man',     icon:'📅', name:'IRON MAN',        desc:'Points logged 5 consecutive days',     cat:'all'},
+  {id:'zero_flags',   icon:'✅', name:'ZERO FLAGS',      desc:'Full week, zero negative points',      cat:'culture'},
+  {id:'captain',      icon:'⭐', name:'CAPTAIN',         desc:'Reached 300 total season points',      cat:'all'},
+  {id:'elite',        icon:'🏆', name:'ELITE BULLDOG',   desc:'Reached 500 total season points',      cat:'all'},
+  {id:'dog_week',     icon:'🦴', name:'DOG OF THE WEEK', desc:'#1 on the weekly board',               cat:'all'},
+  {id:'pack_leader',  icon:'🐕', name:'PACK LEADER',     desc:'Group wins 3 consecutive weeks',       cat:'all'},
+];
+
+const COACHES = [
+  {name:'Coach Baker',   role:'HC / OC / QB',           pos:'QB',    pts:0, wins:0, badges:0, color:'#8B1C1C'},
+  {name:'Coach Zach',    role:'Defensive Coordinator',   pos:'LB',    pts:0, wins:0, badges:0, color:'#1a4a8c'},
+  {name:'Coach Garcia',  role:'AHC / JV Head Coach',     pos:'RB',    pts:0, wins:0, badges:0, color:'#5a1a8c'},
+  {name:'Coach Soliz',   role:'Offensive Line',           pos:'OL',    pts:0, wins:0, badges:0, color:'#4a0a4a'},
+  {name:'Coach Thomas',  role:'Defensive Line',           pos:'DL',    pts:0, wins:0, badges:0, color:'#0a4a3a'},
+  {name:'Coach Collins', role:'Varsity DB / ST Coord.',   pos:'DB',    pts:0, wins:0, badges:0, color:'#2a6a2a'},
+  {name:'Coach Mike',    role:'JV Defensive Backs',       pos:'DB',    pts:0, wins:0, badges:0, color:'#6a4a00'},
+  {name:'Coach Nick',    role:'JV DC / Linebackers',      pos:'LB',    pts:0, wins:0, badges:0, color:'#3a2a6a'},
+  {name:'Coach Mininger',role:'Academic Coordinator',     pos:'ALL',   pts:0, wins:0, badges:0, color:'#006a6a'},
+  {name:'Coach Deets',   role:'Varsity Running Backs',    pos:'RB',    pts:0, wins:0, badges:0, color:'#6a2a00'},
+  {name:'Coach Coffey',  role:'JV Running Backs',         pos:'RB',    pts:0, wins:0, badges:0, color:'#4a6a00'},
+  {name:'Coach Zimm',    role:'Wide Receivers',           pos:'WR',    pts:0, wins:0, badges:0, color:'#6a006a'},
+  {name:'Coach Miles',   role:'Kickers / Specialists',    pos:'K',     pts:0, wins:0, badges:0, color:'#006a4a'},
+];
+
+// ══════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════
+let roster = [], activity = [], coachData = [...COACHES];
+let earnedBadges = {}, currentFilter = 'all', currentWeek = 1;
+let selCat = null, selAction = null, scriptUrl = '', syncQueue = [], isOnline = true;
+let deferredInstall = null;
+
+const DEFAULT_ROSTER = [
+  {id:1,name:'Marcus J.',pos:'QB'},{id:2,name:'Devon T.',pos:'WR'},{id:3,name:'Caleb M.',pos:'WR'},
+  {id:4,name:'Jordan H.',pos:'RB'},{id:5,name:'Tyler B.',pos:'OL'},{id:6,name:'Chris P.',pos:'OL'},
+  {id:7,name:'Darius W.',pos:'OL'},{id:8,name:'Andre L.',pos:'TE'},{id:9,name:'Malik S.',pos:'DB'},
+  {id:10,name:'Trey C.',pos:'DB'},{id:11,name:'Jaylen R.',pos:'LB'},{id:12,name:'Marcus K.',pos:'LB'},
+  {id:13,name:'Elijah F.',pos:'DL'},{id:14,name:'Desean N.',pos:'DL'},{id:15,name:'Isaiah G.',pos:'QB'},
+  {id:16,name:'Noah A.',pos:'WR'},{id:17,name:'Zach D.',pos:'RB'},{id:18,name:'Evan O.',pos:'OL'},
+  {id:19,name:'Kyle V.',pos:'TE'},{id:20,name:'Sam E.',pos:'DB'},{id:21,name:'Aaron Y.',pos:'LB'},
+  {id:22,name:'Bryce I.',pos:'DL'},
+];
+
+function blankPlayer(p) {
+  return {...p, pts:0, weekPts:0, breakdown:{
+    practice:0, attendance:0, academic:0, strength:0,
+    compete:0, culture:0, behavior:0, service:0
+  }};
+}
+
+// ══════════════════════════════════════════════════
+// STORAGE
+// ══════════════════════════════════════════════════
+function load() {
+  try {
+    roster       = JSON.parse(localStorage.getItem('bd_roster'))    || DEFAULT_ROSTER.map(blankPlayer);
+    activity     = JSON.parse(localStorage.getItem('bd_activity'))  || [];
+    coachData    = JSON.parse(localStorage.getItem('bd_coaches'))   || [...COACHES];
+    earnedBadges = JSON.parse(localStorage.getItem('bd_badges'))    || {};
+    currentWeek  = parseInt(localStorage.getItem('bd_week'))        || 1;
+    // Use saved URL, fall back to hardcoded default
+    scriptUrl    = localStorage.getItem('bd_script_url')            || HARDCODED_SCRIPT_URL;
+    syncQueue    = JSON.parse(localStorage.getItem('bd_queue'))     || [];
+    if (!roster[0]?.breakdown?.attendance) {
+      roster = roster.map(r => blankPlayer({id:r.id||Date.now(),name:r.name,pos:r.pos}));
+    }
+  } catch(e) {
+    roster = DEFAULT_ROSTER.map(blankPlayer);
+    scriptUrl = HARDCODED_SCRIPT_URL;
+  }
+}
+
+function save() {
+  try {
+    localStorage.setItem('bd_roster',   JSON.stringify(roster));
+    localStorage.setItem('bd_activity', JSON.stringify(activity.slice(0,200)));
+    localStorage.setItem('bd_coaches',  JSON.stringify(coachData));
+    localStorage.setItem('bd_badges',   JSON.stringify(earnedBadges));
+    localStorage.setItem('bd_week',     currentWeek);
+    localStorage.setItem('bd_queue',    JSON.stringify(syncQueue));
+    if (scriptUrl) localStorage.setItem('bd_script_url', scriptUrl);
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════
+// SYNC / GOOGLE SHEETS
+// ══════════════════════════════════════════════════
+function setSyncStatus(state) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  if (state === 'ok')      { dot.className='sync-dot';         lbl.textContent='SYNC'; }
+  if (state === 'syncing') { dot.className='sync-dot pending'; lbl.textContent='...'; }
+  if (state === 'off')     { dot.className='sync-dot off';     lbl.textContent='OFF'; }
+  if (state === 'queue')   { dot.className='sync-dot pending'; lbl.textContent=`Q:${syncQueue.length}`; }
+}
+
+async function postToSheets(payload) {
+  if (!scriptUrl) return false;
+  try {
+    const res = await fetch(scriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' }, // text/plain avoids CORS preflight on Apps Script
+      body: JSON.stringify(payload),
+      redirect: 'follow',
+    });
+    if (!res.ok) return false;
+    const json = await res.json().catch(() => ({}));
+    return json.ok !== false;
+  } catch(e) { return false; }
+}
+
+async function logPointToSheets(entry) {
+  if (!scriptUrl) return;
+  const payload = {
+    action: 'log_point',
+    week: currentWeek,
+    playerName: entry.name,
+    position: entry.pos,
+    playerId: entry.pid,
+    category: entry.cat,
+    action: entry.label,
+    points: entry.pts,
+    seasonTotal: entry.seasonTotal,
+    weekTotal: entry.weekTotal,
+    catBreakdown: entry.breakdown,
+    loggedBy: 'Coach Baker',
+  };
+
+  if (!isOnline) {
+    syncQueue.push(payload);
+    setSyncStatus('queue');
+    save();
+    return;
+  }
+
+  setSyncStatus('syncing');
+  const ok = await postToSheets(payload);
+  setSyncStatus(ok ? 'ok' : 'off');
+
+  if (!ok) {
+    syncQueue.push(payload);
+    setSyncStatus('queue');
+    save();
+  }
+}
+
+async function flushQueue() {
+  if (!syncQueue.length || !isOnline || !scriptUrl) return;
+  setSyncStatus('syncing');
+  const failed = [];
+  for (const payload of syncQueue) {
+    const ok = await postToSheets(payload);
+    if (!ok) failed.push(payload);
+  }
+  syncQueue = failed;
+  save();
+  setSyncStatus(syncQueue.length ? 'queue' : 'ok');
+}
+
+async function manualSync() {
+  if (!scriptUrl) { showToast('Set Script URL in Setup tab','error'); return; }
+  setSyncStatus('syncing');
+  // Full sync
+  const payload = {
+    action: 'sync_all',
+    week: currentWeek,
+    roster,
+    coaches: coachData,
+    groups: GROUPS.map(g => ({
+      ...g,
+      total: getGroupPts(g),
+      ...getCatBreakdownForGroup(g),
+    })),
+    weeklySnapshot: roster,
+  };
+  const ok = await postToSheets(payload);
+  if (ok) {
+    await flushQueue();
+    showToast('SYNCED TO SHEETS ✓','success');
+    setSyncStatus('ok');
+  } else {
+    showToast('SYNC FAILED — queued','error');
+    setSyncStatus('off');
+  }
+}
+
+async function forceSyncAll() { await manualSync(); }
+
+async function testConnection() {
+  const url = document.getElementById('script-url').value.trim();
+  if (!url) { showToast('Enter a URL first','error'); return; }
+  setSyncStatus('syncing');
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'get_summary' }),
+      redirect: 'follow',
+    });
+    const json = await res.json().catch(() => ({}));
+    if (res.ok && json.ok !== false) {
+      showSyncStatus('ok', 'Connected — URL works');
+      showToast('CONNECTION OK ✓', 'success');
+      setSyncStatus('ok');
+    } else {
+      throw new Error('Bad response');
+    }
+  } catch(e) {
+    showSyncStatus('err', 'Connection failed — check URL and permissions');
+    showToast('CONNECTION FAILED', 'error');
+    setSyncStatus('off');
+  }
+}
+
+function saveScriptUrl() {
+  scriptUrl = document.getElementById('script-url').value.trim();
+  save();
+  showToast('URL SAVED');
+  setSyncStatus(scriptUrl ? 'ok' : 'off');
+}
+
+function showSyncStatus(type, msg) {
+  document.getElementById('sync-status').innerHTML =
+    `<div class="status-pill ${type}" style="margin-top:8px">
+      <span>${type==='ok'?'✓':type==='err'?'✗':'⚠'}</span> ${msg}
+    </div>`;
+}
+
+// ══════════════════════════════════════════════════
+// ONLINE / OFFLINE
+// ══════════════════════════════════════════════════
+window.addEventListener('online', () => {
+  isOnline = true;
+  document.getElementById('offline-bar').classList.remove('show');
+  setSyncStatus('ok');
+  flushQueue();
+});
+window.addEventListener('offline', () => {
+  isOnline = false;
+  document.getElementById('offline-bar').classList.add('show');
+  setSyncStatus('off');
+});
+
+// ══════════════════════════════════════════════════
+// RANKS / HELPERS
+// ══════════════════════════════════════════════════
+function getRank(pts) {
+  if (pts>=500) return '🏆 ELITE';
+  if (pts>=300) return '⭐ CAPTAIN';
+  if (pts>=150) return '🔴 STARTER';
+  if (pts>=75)  return '🟡 VARSITY';
+  if (pts>=25)  return '⚪ WALK-ON';
+  return '🔘 SCOUT';
+}
+
+function getGroupPts(g) {
+  return roster.filter(p => g.positions.includes(p.pos)).reduce((s,p) => s+p.pts, 0);
+}
+
+function getCatBreakdownForGroup(g) {
+  const members = roster.filter(p => g.positions.includes(p.pos));
+  return {
+    practice: members.reduce((s,p)=>s+(p.breakdown.practice||0),0),
+    academic:  members.reduce((s,p)=>s+(p.breakdown.academic||0),0),
+    strength:  members.reduce((s,p)=>s+(p.breakdown.strength||0),0),
+    compete:   members.reduce((s,p)=>s+(p.breakdown.compete||0),0),
+    culture:   members.reduce((s,p)=>s+(p.breakdown.culture||0),0),
+  };
+}
+
+// ══════════════════════════════════════════════════
+// LEADERBOARD
+// ══════════════════════════════════════════════════
+function renderLB() {
+  const list = document.getElementById('lb-list');
+  const sorted = [...roster].sort((a,b) => {
+    if (currentFilter === 'alpha') {
+      // Sort by first name A-Z
+      const nameA = a.name.split(' ')[0].toLowerCase();
+      const nameB = b.name.split(' ')[0].toLowerCase();
+      return nameA.localeCompare(nameB);
+    }
+    const va = currentFilter==='all' ? a.pts : (a.breakdown[currentFilter]||0);
+    const vb = currentFilter==='all' ? b.pts : (b.breakdown[currentFilter]||0);
+    return vb - va;
+  });
+  const rc = ['gold-rank','silver-rank','bronze-rank'];
+  const isAlpha = currentFilter === 'alpha';
+  list.innerHTML = sorted.map((p,i) => {
+    const col = POSITIONS[p.pos]||'#555';
+    const rank = getRank(p.pts);
+    const pts = currentFilter==='all'||isAlpha ? p.pts : (p.breakdown[currentFilter]||0);
+    const wk = p.weekPts;
+    const trendCls = wk>0?'up':wk<0?'dn':'eq';
+    const trendTxt = wk>0?`▲${wk}`:wk<0?`▼${Math.abs(wk)}`:'—';
+    return `<div class="lb-item ${!isAlpha&&i<3?rc[i]:''}">
+      <div class="rank-num ${!isAlpha&&i===0?'r1':!isAlpha&&i===1?'r2':!isAlpha&&i===2?'r3':''}">${isAlpha ? p.pos : i+1}</div>
+      <div class="lb-avatar" style="background:${col}">${p.pos}</div>
+      <div class="lb-info">
+        <div class="lb-name">${p.name}</div>
+        <div class="lb-meta">${rank} · Wk${currentWeek}: <span style="color:${wk>=0?'#4caf50':'#f44'}">${wk>=0?'+':''}${wk}</span></div>
+      </div>
+      <div class="lb-pts">${pts}<small>PTS</small></div>
+      <div class="trend ${trendCls}">${trendTxt}</div>
+    </div>`;
+  }).join('');
+
+  // Stats
+  const byPts = [...roster].sort((a,b)=>b.pts-a.pts);
+  const leader = byPts[0];
+  document.getElementById('s-players').textContent = roster.length;
+  document.getElementById('s-leader').textContent = leader ? leader.name.split(' ')[0] : '—';
+  const today = new Date().toDateString();
+  document.getElementById('s-logs').textContent = activity.filter(a => new Date(a.time).toDateString()===today).length;
+  document.getElementById('week-badge').textContent = `WK ${currentWeek}`;
+}
+
+function filterLB(cat, el) {
+  currentFilter = cat;
+  document.querySelectorAll('.lb-filter').forEach(f=>f.classList.remove('active'));
+  el.classList.add('active');
+  renderLB();
+}
+
+// ══════════════════════════════════════════════════
+// INPUT / LOG POINTS
+// ══════════════════════════════════════════════════
+function buildInputPage() {
+  const sel = document.getElementById('sel-player');
+  sel.innerHTML = '<option value="">— Choose player —</option>' +
+    roster.map(p=>`<option value="${p.id}">${p.name} (${p.pos})</option>`).join('');
+
+  document.getElementById('cat-grid').innerHTML = CATEGORIES.map(c=>
+    `<div class="cat-btn" onclick="selectCat('${c.id}',this)">
+      <span class="cat-icon">${c.icon}</span>
+      <span class="cat-text">${c.label}</span>
+    </div>`
+  ).join('');
+}
+
+function selectCat(id, el) {
+  selCat = id; selAction = null;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
+  el.classList.add('selected');
+  const cat = CATEGORIES.find(c=>c.id===id);
+  document.getElementById('action-section').style.display = 'block';
+  document.getElementById('action-list').innerHTML = cat.actions.map((a,i)=>
+    `<div class="action-row" onclick="selectAction(${i},this,${a.pts})">
+      <span class="action-row-label">${a.label}</span>
+      <span class="action-row-pts ${a.pts>0?'pts-pos':'pts-neg'}">${a.pts>0?'+':''}${a.pts}</span>
+    </div>`
+  ).join('');
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('action-section').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function selectAction(idx, el, pts) {
+  selAction = {idx, pts};
+  document.querySelectorAll('.action-row').forEach(r=>r.classList.remove('selected'));
+  el.classList.add('selected');
+  checkSubmit();
+}
+
+function checkSubmit() {
+  const pid = document.getElementById('sel-player').value;
+  document.getElementById('submit-btn').disabled = !(pid && selCat && selAction);
+}
+
+async function submitPoints() {
+  const pid = parseInt(document.getElementById('sel-player').value);
+  if (!pid || !selCat || !selAction) return;
+  const player = roster.find(p=>p.id===pid);
+  if (!player) return;
+  const cat = CATEGORIES.find(c=>c.id===selCat);
+  const actionObj = cat.actions[selAction.idx];
+  const pts = selAction.pts;
+
+  player.pts += pts;
+  player.weekPts += pts;
+  player.breakdown[selCat] = (player.breakdown[selCat]||0) + pts;
+
+  const entry = {
+    pid, name:player.name, pos:player.pos, cat:selCat,
+    icon:cat.icon, label:actionObj.label, pts,
+    seasonTotal: player.pts, weekTotal: player.weekPts,
+    breakdown: {...player.breakdown},
+    time: new Date().toISOString()
+  };
+  activity.unshift(entry);
+  checkAndAwardBadges(player);
+  save();
+  await logPointToSheets(entry);
+  showToast(`${pts>0?'+':''}${pts} → ${player.name}`,'success');
+  renderAll();
+  resetInput();
+}
+
+function resetInput() {
+  selCat = null; selAction = null;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('selected'));
+  document.getElementById('action-section').style.display = 'none';
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('sel-player').value = '';
+}
+
+function renderActivity() {
+  const al = document.getElementById('activity-list');
+  const today = new Date().toDateString();
+  const todayActivity = activity
+    .map((a, globalIdx) => ({...a, globalIdx}))
+    .filter(a => new Date(a.time).toDateString() === today);
+  if (!todayActivity.length) { al.innerHTML = '<div class="empty">No activity today.</div>'; return; }
+  al.innerHTML = todayActivity.slice(0,30).map(a => {
+    const t = new Date(a.time).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    return `<div class="activity-item" id="act-${a.globalIdx}">
+      <span class="act-icon">${a.icon}</span>
+      <div class="act-info">
+        <div class="act-name">${a.name} <span style="color:var(--muted);font-size:10px">${a.pos}</span></div>
+        <div class="act-cat">${a.label}</div>
+      </div>
+      <div class="act-pts ${a.pts>=0?'pos':'neg'}">${a.pts>0?'+':''}${a.pts}</div>
+      <div class="act-time">${t}</div>
+      <button onclick="deleteEntry(${a.globalIdx})" style="background:none;border:1px solid #6a0000;border-radius:5px;padding:4px 8px;color:#f44;font-size:13px;cursor:pointer;flex-shrink:0;margin-left:4px" title="Delete this entry">✕</button>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════
+// DELETE ENTRY
+// ══════════════════════════════════════════════════
+async function deleteEntry(globalIdx) {
+  const entry = activity[globalIdx];
+  if (!entry) return;
+
+  const player = roster.find(p => p.id === entry.pid);
+  const confirmMsg = `Delete "${entry.label}" (${entry.pts > 0 ? '+' : ''}${entry.pts}) for ${entry.name}?`;
+  if (!confirm(confirmMsg)) return;
+
+  // Reverse the points on the player
+  if (player) {
+    player.pts     -= entry.pts;
+    player.weekPts -= entry.pts;
+    if (player.breakdown[entry.cat] !== undefined) {
+      player.breakdown[entry.cat] -= entry.pts;
+    }
+  }
+
+  // Remove from activity log
+  activity.splice(globalIdx, 1);
+
+  save();
+  renderAll();
+  showToast(`DELETED — ${entry.name} ${entry.pts > 0 ? '-' : '+'}${Math.abs(entry.pts)} pts`, 'error');
+
+  // Log the deletion to Sheets as a correction entry
+  if (scriptUrl) {
+    await logPointToSheets({
+      pid: entry.pid,
+      name: entry.name,
+      pos: entry.pos,
+      cat: entry.cat,
+      icon: '🗑',
+      label: `DELETED: ${entry.label}`,
+      pts: -entry.pts,
+      seasonTotal: player ? player.pts : 0,
+      weekTotal: player ? player.weekPts : 0,
+      breakdown: player ? {...player.breakdown} : {},
+      time: new Date().toISOString(),
+    });
+  }
+}
+
+
+function renderGroups() {
+  const withPts = GROUPS.map(g=>({...g, total:getGroupPts(g)})).sort((a,b)=>b.total-a.total);
+  const max = Math.max(...withPts.map(g=>g.total), 1);
+  const medals = ['👑','🥈','🥉'];
+  document.getElementById('group-lb').innerHTML = withPts.map((g,i)=>{
+    const pct = Math.round((g.total/max)*100);
+    return `<div class="group-card">
+      <div class="group-card-hdr" style="border-left:4px solid ${g.color}">
+        <div>
+          <div class="group-name" style="color:${g.color}">${medals[i]} ${g.name}</div>
+          <div style="font-family:'Barlow';font-size:11px;color:var(--muted)">${g.desc}</div>
+        </div>
+        <div class="group-pts">${g.total}<small>PTS</small></div>
+      </div>
+      <div class="group-bar-wrap"><div class="group-bar" style="width:${pct}%;background:${g.color}"></div></div>
+      <div class="group-members">${roster.filter(p=>g.positions.includes(p.pos)).map(p=>`${p.name} (${p.pts})`).join(' · ')}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('group-detail').innerHTML = withPts.map(g=>{
+    const members = roster.filter(p=>g.positions.includes(p.pos)).sort((a,b)=>b.pts-a.pts);
+    return `<div class="guide-card">
+      <div class="guide-hdr">
+        <div class="guide-color" style="background:${g.color}"></div>
+        <div class="guide-title" style="color:${g.color}">${g.name}</div>
+      </div>
+      <div class="guide-rows">${members.map(p=>`
+        <div class="guide-row">
+          <span class="guide-row-label">${p.name} <span style="color:var(--muted);font-size:10px">${p.pos} · ${getRank(p.pts)}</span></span>
+          <span class="guide-row-pts ${p.pts>=0?'pts-pos':'pts-neg'}">${p.pts}</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════════
+// COACHES
+// ══════════════════════════════════════════════════
+function renderCoaches() {
+  coachData.forEach(c => {
+    c.pts = roster.filter(p=>c.pos.split('/').some(pos=>p.pos===pos.trim())).reduce((s,p)=>s+p.pts,0);
+  });
+  const sorted = [...coachData].sort((a,b)=>b.pts-a.pts);
+  document.getElementById('coach-list').innerHTML = sorted.map((c,i)=>`
+    <div class="coach-card" style="border-left:4px solid ${c.color}">
+      <div class="coach-ava" style="background:${c.color}">${c.name.split(' ').map(w=>w[0]).join('')}</div>
+      <div class="coach-info">
+        <div class="coach-name">${i===0?'👑 ':''}${c.name}</div>
+        <div class="coach-role">${c.role}</div>
+        <div class="coach-stats">
+          <div class="cs"><div class="n">${c.wins}</div><div class="l">Weeks Won</div></div>
+          <div class="cs"><div class="n">${c.badges}</div><div class="l">Badges</div></div>
+        </div>
+      </div>
+      <div class="coach-pts">${c.pts}<br><span style="font-size:9px;font-family:'Barlow Condensed';color:var(--muted)">GROUP PTS</span></div>
+    </div>`
+  ).join('');
+}
+
+// ══════════════════════════════════════════════════
+// BADGES
+// ══════════════════════════════════════════════════
+function checkAndAwardBadges(player) {
+  if (activity.length === 1) earnedBadges['first_blood'] = true;
+  if (player.pts >= 500) earnedBadges['elite'] = true;
+  if (player.pts >= 300) earnedBadges['captain'] = true;
+  const topWeek = [...roster].sort((a,b)=>b.weekPts-a.weekPts)[0];
+  if (topWeek?.weekPts > 0) earnedBadges['dog_week'] = true;
+}
+
+function renderBadges() {
+  document.getElementById('badge-grid').innerHTML = BADGES.map(b=>`
+    <div class="badge-card ${earnedBadges[b.id]?'earned':'locked'}">
+      <span class="badge-emoji">${b.icon}</span>
+      <span class="badge-name">${b.name}</span>
+      <span class="badge-desc">${b.desc}</span>
+    </div>`
+  ).join('');
+}
+
+// ══════════════════════════════════════════════════
+// SYSTEM GUIDE
+// ══════════════════════════════════════════════════
+function renderSystem() {
+  document.getElementById('system-guide').innerHTML = CATEGORIES.map(c=>`
+    <div class="guide-card">
+      <div class="guide-hdr">
+        <span class="guide-icon">${c.icon}</span>
+        <div class="guide-title" style="color:${c.color}">${c.label}</div>
+      </div>
+      <div class="guide-rows">${c.actions.map(a=>`
+        <div class="guide-row">
+          <span class="guide-row-label">${a.label}</span>
+          <span class="guide-row-pts ${a.pts>0?'pts-pos':'pts-neg'}">${a.pts>0?'+':''}${a.pts}</span>
+        </div>`).join('')}
+      </div>
+    </div>`
+  ).join('');
+}
+
+// ══════════════════════════════════════════════════
+// CODE WORD MANAGEMENT
+// ══════════════════════════════════════════════════
+function saveCodeWord() {
+  const word = document.getElementById('code-word-input').value.trim().toUpperCase();
+  if (!word) { showToast('Enter a code word first', 'error'); return; }
+  localStorage.setItem('bd_coach_code', word);
+  // Push to Sheets so athlete app can pull it
+  if (scriptUrl) {
+    fetch(scriptUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'set_code', codeWord: word }),
+      redirect: 'follow',
+    }).catch(() => {});
+  }
+  document.getElementById('code-status').innerHTML =
+    `<span style="color:#4caf50">✓ Code word set: <strong>${word}</strong> — Post at session location only.</span>`;
+  showToast(`CODE WORD: ${word}`, 'success');
+}
+
+function loadCodeWordField() {
+  const saved = localStorage.getItem('bd_coach_code') || '';
+  const el = document.getElementById('code-word-input');
+  if (el && saved) el.value = saved;
+}
+
+// ══════════════════════════════════════════════════
+// ATTENDANCE LEADERBOARD (off-season compete board)
+// ══════════════════════════════════════════════════
+const OFFSEASON_CALENDAR = [
+  { date:'2026-05-18', sessions:[{type:'practice',pts:2},{type:'individual',pts:2,note:'By position'}] },
+  { date:'2026-05-19', sessions:[{type:'weights',pts:2},{type:'individual',pts:2}] },
+  { date:'2026-05-20', sessions:[{type:'weights',pts:2},{type:'individual',pts:2}] },
+  { date:'2026-05-21', sessions:[{type:'weights',pts:2},{type:'individual',pts:2}] },
+  { date:'2026-05-26', sessions:[{type:'weights',pts:2},{type:'individual',pts:2}] },
+  { date:'2026-05-27', sessions:[{type:'weights',pts:2},{type:'individual',pts:2}] },
+  { date:'2026-05-28', sessions:[{type:'weights',pts:2},{type:'individual',pts:2}] },
+  { date:'2026-05-29', sessions:[{type:'practice',pts:2}] },
+  { date:'2026-05-30', sessions:[{type:'compete',pts:2}] },
+  { date:'2026-06-02', sessions:[{type:'practice',pts:2}] },
+  { date:'2026-06-08', sessions:[{type:'compete',pts:2}] },
+  { date:'2026-06-09', sessions:[{type:'weights',pts:2},{type:'individual',pts:2}] },
+  { date:'2026-06-10', sessions:[{type:'compete',pts:2}] },
+  { date:'2026-06-11', sessions:[{type:'weights',pts:2},{type:'practice',pts:2}] },
+  { date:'2026-06-15', sessions:[{type:'compete',pts:2}] },
+  { date:'2026-06-16', sessions:[{type:'weights',pts:2},{type:'individual',pts:2}] },
+  { date:'2026-06-17', sessions:[{type:'weights',pts:2},{type:'individual',pts:2}] },
+  { date:'2026-06-18', sessions:[{type:'weights',pts:2},{type:'practice',pts:2}] },
+  { date:'2026-06-23', sessions:[{type:'weights',pts:2},{type:'individual',pts:2}] },
+  { date:'2026-06-24', sessions:[{type:'weights',pts:2},{type:'individual',pts:2}] },
+  { date:'2026-06-25', sessions:[{type:'weights',pts:2}] },
+  { date:'2026-07-07', sessions:[{type:'weights',pts:2},{type:'camp',pts:2}] },
+  { date:'2026-07-09', sessions:[{type:'weights',pts:2},{type:'camp',pts:2}] },
+  { date:'2026-07-11', sessions:[{type:'camp',pts:2}] },
+  { date:'2026-07-13', sessions:[{type:'camp',pts:2}] },
+  { date:'2026-07-14', sessions:[{type:'weights',pts:2}] },
+  { date:'2026-07-15', sessions:[{type:'weights',pts:2},{type:'camp',pts:2}] },
+  { date:'2026-07-16', sessions:[{type:'weights',pts:2}] },
+  { date:'2026-07-17', sessions:[{type:'camp',pts:2}] },
+  { date:'2026-07-19', sessions:[{type:'camp',pts:2}] },
+  { date:'2026-07-20', sessions:[{type:'camp',pts:2}] },
+  { date:'2026-07-21', sessions:[{type:'camp',pts:2}] },
+  { date:'2026-07-22', sessions:[{type:'weights',pts:2},{type:'camp',pts:2}] },
+];
+
+function getOffseasonPossibleToDate() {
+  const today = todayStr_os();
+  return OFFSEASON_CALENDAR
+    .filter(d => d.date <= today)
+    .reduce((sum, d) => sum + d.sessions.reduce((s2, s) => s2 + (s.pts||2), 0), 0);
+}
+
+function getOffseasonTotalPossible() {
+  return OFFSEASON_CALENDAR.reduce((sum, d) =>
+    sum + d.sessions.reduce((s2, s) => s2 + (s.pts||2), 0), 0);
+}
+
+function todayStr_os() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function getAthleteCheckinPts(playerName) {
+  try {
+    const checkins = JSON.parse(localStorage.getItem('bd_checkins') || '[]');
+    return checkins.filter(c => c.playerName === playerName && c.source === 'athlete')
+      .reduce((s, c) => s + (c.pts||2), 0);
+  } catch(e) { return 0; }
+}
+
+function renderAttendanceLB() {
+  const el = document.getElementById('attend-lb');
+  if (!el) return;
+  const possible = getOffseasonPossibleToDate();
+  const allTime = getOffseasonTotalPossible();
+
+  const sorted = [...roster].map(p => {
+    const pts = getAthleteCheckinPts(p.name);
+    const pct = possible > 0 ? Math.round((pts / possible) * 100) : 0;
+    return { ...p, pts, pct };
+  }).sort((a,b) => b.pct - a.pct || b.pts - a.pts);
+
+  const pctColor = (pct) => {
+    if (pct >= 90) return '#f0c535';
+    if (pct >= 75) return '#4caf50';
+    if (pct >= 50) return '#c9a227';
+    return '#555';
+  };
+
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;font-family:'Barlow Condensed';font-size:11px;color:var(--muted);letter-spacing:1px;margin-bottom:8px;padding:0 4px">
+      <span>POSSIBLE TO DATE: <strong style="color:var(--gold)">${possible} pts</strong></span>
+      <span>TOTAL: <strong style="color:var(--muted)">${allTime} pts</strong></span>
+    </div>
+    ${sorted.map((p, i) => `
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:7px;padding:9px 12px;display:flex;align-items:center;gap:9px;margin-bottom:5px">
+        <div style="font-family:'Bebas Neue';font-size:18px;color:${i===0?'#f0c535':i===1?'#ccc':i===2?'#c87d00':'var(--muted)'};width:22px;text-align:center;flex-shrink:0">${i+1}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-family:'Barlow Condensed';font-size:14px;font-weight:700">${p.name} <span style="color:var(--muted);font-size:10px">${p.pos}</span></div>
+          <div style="height:3px;background:var(--border);border-radius:2px;margin-top:4px">
+            <div style="height:3px;border-radius:2px;width:${p.pct}%;background:${pctColor(p.pct)};transition:width .6s"></div>
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-family:'Bebas Neue';font-size:18px;color:var(--gold)">${p.pts}</div>
+          <div style="font-family:'Barlow Condensed';font-size:10px;color:${pctColor(p.pct)}">${p.pct}%</div>
+        </div>
+      </div>
+    `).join('')}
+  `;
+}
+
+
+function buildRosterEditor() {
+  const el = document.getElementById('roster-editor');
+  el.innerHTML = roster.map((p,i)=>`
+    <div class="roster-row">
+      <input value="${p.name}" placeholder="Player name" onchange="roster[${i}].name=this.value">
+      <select onchange="roster[${i}].pos=this.value">
+        ${Object.keys(POSITIONS).map(pos=>`<option value="${pos}" ${p.pos===pos?'selected':''}>${pos}</option>`).join('')}
+      </select>
+      <button class="del" onclick="removeRosterRow(${i})">✕</button>
+    </div>`
+  ).join('');
+  if (scriptUrl) document.getElementById('script-url').value = scriptUrl;
+  else document.getElementById('script-url').value = HARDCODED_SCRIPT_URL;
+}
+
+function addRosterRow() {
+  const newId = Math.max(...roster.map(p=>p.id),0)+1;
+  roster.push(blankPlayer({id:newId, name:'New Player', pos:'QB'}));
+  buildRosterEditor();
+  buildInputPage();
+}
+
+function removeRosterRow(i) {
+  roster.splice(i,1);
+  buildRosterEditor();
+  buildInputPage();
+}
+
+function saveRoster() {
+  save();
+  buildInputPage();
+  renderAll();
+  showToast('ROSTER SAVED');
+}
+
+// ══════════════════════════════════════════════════
+// SETTINGS — COACH EDITOR
+// ══════════════════════════════════════════════════
+const COACH_COLORS = [
+  '#8B1C1C','#1a4a8c','#5a1a8c','#4a0a4a','#0a4a3a',
+  '#2a6a2a','#6a4a00','#3a2a6a','#006a6a','#6a2a00',
+  '#4a6a00','#6a006a','#006a4a','#4a4a00','#006a8c',
+];
+
+function buildCoachEditor() {
+  const el = document.getElementById('coach-editor');
+  if (!el) return;
+  el.innerHTML = coachData.map((c, i) => `
+    <div class="roster-row" style="flex-wrap:wrap;gap:5px;margin-bottom:6px;align-items:center">
+      <input value="${c.name}" placeholder="Coach name"
+        style="flex:1;min-width:100px"
+        onchange="coachData[${i}].name=this.value">
+      <input value="${c.role}" placeholder="Role (e.g. OL Coach)"
+        style="flex:2;min-width:140px"
+        onchange="coachData[${i}].role=this.value">
+      <select onchange="coachData[${i}].pos=this.value"
+        style="width:60px;background:#0d0d0d;border:1px solid var(--border);border-radius:5px;padding:7px 5px;color:var(--text);font-family:'Barlow Condensed';font-size:13px;outline:none">
+        ${['QB','WR','RB','OL','TE','DB','LB','DL','K','ALL'].map(pos =>
+          `<option value="${pos}" ${c.pos===pos?'selected':''}>${pos}</option>`
+        ).join('')}
+      </select>
+      <select onchange="coachData[${i}].color=this.value"
+        style="width:44px;background:${c.color};border:1px solid var(--border);border-radius:5px;padding:7px 4px;color:#fff;font-family:'Bebas Neue';font-size:11px;outline:none;text-align:center">
+        ${COACH_COLORS.map(col =>
+          `<option value="${col}" ${c.color===col?'selected':''} style="background:${col}">●</option>`
+        ).join('')}
+      </select>
+      <button class="del" onclick="removeCoachRow(${i})">✕</button>
+    </div>`
+  ).join('');
+}
+
+function addCoachRow() {
+  const colors = COACH_COLORS;
+  const nextColor = colors[coachData.length % colors.length];
+  coachData.push({
+    name: 'New Coach',
+    role: 'Position Coach',
+    pos:  'QB',
+    pts:  0,
+    wins: 0,
+    badges: 0,
+    color: nextColor,
+  });
+  buildCoachEditor();
+}
+
+function removeCoachRow(i) {
+  if (!confirm(`Remove ${coachData[i].name} from the staff?`)) return;
+  coachData.splice(i, 1);
+  buildCoachEditor();
+}
+
+function saveCoaches() {
+  save();
+  renderAll();
+  showToast('STAFF SAVED');
+}
+
+// ══════════════════════════════════════════════════
+// WEEK MANAGEMENT
+// ══════════════════════════════════════════════════
+async function advanceWeek() {
+  const newWeek = parseInt(document.getElementById('week-sel').value);
+  // Take weekly snapshot to sheets before resetting
+  if (scriptUrl) {
+    await postToSheets({
+      action: 'sync_all', week: currentWeek,
+      roster, coaches: coachData,
+      weeklySnapshot: roster,
+      groups: GROUPS.map(g=>({...g,total:getGroupPts(g),...getCatBreakdownForGroup(g)})),
+    });
+  }
+  currentWeek = newWeek;
+  roster.forEach(p => p.weekPts = 0);
+  save();
+  closeModal('week-modal');
+  renderAll();
+  showToast(`WEEK ${currentWeek} LOCKED IN`,'success');
+}
+
+// ══════════════════════════════════════════════════
+// EXPORT CSV
+// ══════════════════════════════════════════════════
+function exportCSV() {
+  const header = 'Name,Position,Season Pts,Week Pts,Practice,Attendance,Academic,Strength,Compete,Culture,Behavior,Service,Rank';
+  const rows = [...roster].sort((a,b)=>b.pts-a.pts).map(p=>
+    `"${p.name}",${p.pos},${p.pts},${p.weekPts},` +
+    `${p.breakdown.practice||0},${p.breakdown.attendance||0},${p.breakdown.academic||0},` +
+    `${p.breakdown.strength||0},${p.breakdown.compete||0},${p.breakdown.culture||0},` +
+    `${p.breakdown.behavior||0},${p.breakdown.service||0},"${getRank(p.pts)}"`
+  );
+  const csv = [header,...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download=`bulldog-compete-week${currentWeek}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  showToast('CSV EXPORTED');
+}
+
+// ══════════════════════════════════════════════════
+// IMPORT CSV
+// ══════════════════════════════════════════════════
+function importCSV(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const status = document.getElementById('import-status');
+  status.textContent = 'Reading file...';
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const lines = e.target.result.split('\n').map(l => l.trim()).filter(l => l);
+      if (lines.length < 2) { status.textContent = '✗ File is empty or invalid.'; return; }
+
+      // Parse header row — find column indexes
+      const headers = lines[0].split(',').map(h => h.replace(/"/g,'').trim().toLowerCase());
+      const col = (name) => headers.findIndex(h => h.includes(name));
+
+      const iName     = col('name');
+      const iPos      = col('pos');
+      const iSeason   = col('season');
+      const iWeek     = col('week');
+      const iPractice = col('practice');
+      const iAttend   = col('attend');
+      const iAcademic = col('academic');
+      const iStrength = col('strength');
+      const iCompete  = col('compete');
+      const iCulture  = col('culture');
+      const iBehavior = col('behavior');
+      const iService  = col('service');
+
+      if (iName === -1 || iPos === -1) {
+        status.textContent = '✗ Could not find Name or Position columns.';
+        return;
+      }
+
+      const parseCell = (row, idx) => idx === -1 ? 0 : parseInt(row[idx]) || 0;
+      const parseStr  = (row, idx) => idx === -1 ? '' : (row[idx] || '').replace(/"/g,'').trim();
+
+      let imported = 0;
+      let added = 0;
+
+      const dataLines = lines.slice(1);
+      dataLines.forEach((line, li) => {
+        // Split CSV respecting quoted commas
+        const row = line.match(/(".*?"|[^,]+)(?=,|$)/g)
+          || line.split(',');
+
+        const name = parseStr(row, iName);
+        const pos  = parseStr(row, iPos).toUpperCase();
+        if (!name) return;
+
+        // Find existing player by name (case-insensitive)
+        let player = roster.find(p => p.name.toLowerCase() === name.toLowerCase());
+
+        if (!player) {
+          // Add as new player
+          const newId = Math.max(...roster.map(p => p.id), 0) + 1 + li;
+          player = blankPlayer({ id: newId, name, pos: pos || 'QB' });
+          roster.push(player);
+          added++;
+        }
+
+        // Restore all point data from CSV
+        if (iPos !== -1 && pos) player.pos = pos;
+        player.pts     = parseCell(row, iSeason);
+        player.weekPts = parseCell(row, iWeek);
+        player.breakdown.practice   = parseCell(row, iPractice);
+        player.breakdown.attendance = parseCell(row, iAttend);
+        player.breakdown.academic   = parseCell(row, iAcademic);
+        player.breakdown.strength   = parseCell(row, iStrength);
+        player.breakdown.compete    = parseCell(row, iCompete);
+        player.breakdown.culture    = parseCell(row, iCulture);
+        player.breakdown.behavior   = parseCell(row, iBehavior);
+        player.breakdown.service    = parseCell(row, iService);
+        imported++;
+      });
+
+      save();
+      buildInputPage();
+      buildRosterEditor();
+      renderAll();
+
+      status.textContent = `✓ Imported ${imported} players${added ? ` (${added} new added)` : ''}.`;
+      status.style.color = '#4caf50';
+      showToast(`ROSTER IMPORTED — ${imported} players`, 'success');
+
+      // Reset file input so same file can be re-imported if needed
+      event.target.value = '';
+
+    } catch(err) {
+      status.textContent = `✗ Import failed: ${err.message}`;
+      status.style.color = '#f44';
+    }
+  };
+  reader.readAsText(file);
+}
+
+
+// ══════════════════════════════════════════════════
+// RESET POINTS ONLY — keeps roster intact
+// ══════════════════════════════════════════════════
+async function confirmResetPoints() {
+  if (!confirm('RESET ALL POINTS TO ZERO?\n\nThis keeps your full roster — names and positions stay.\nAll point totals, activity logs, and badges will be cleared.\n\nThis cannot be undone.')) return;
+
+  // Zero every player — keep name, pos, id
+  roster = roster.map(p => ({
+    ...blankPlayer({ id: p.id, name: p.name, pos: p.pos }),
+  }));
+
+  // Clear activity and badges but NOT roster
+  activity = [];
+  earnedBadges = {};
+  syncQueue = [];
+  currentWeek = 1;
+
+  save();
+  buildInputPage();
+  buildRosterEditor();
+  renderAll();
+  showToast('POINTS RESET — ROSTER KEPT', 'success');
+
+  // Push the clean roster to Sheets
+  if (scriptUrl) {
+    setSyncStatus('syncing');
+    const ok = await postToSheets({
+      action: 'reset_points',
+      roster: roster,
+      week: 1,
+    });
+    setSyncStatus(ok ? 'ok' : 'off');
+    if (ok) showToast('SHEETS UPDATED', 'success');
+  }
+}
+
+function confirmReset() {
+  if (confirm('RESET EVERYTHING? All data including your roster will be wiped.\nThis cannot be undone.')) {
+    roster = DEFAULT_ROSTER.map(blankPlayer);
+    activity = []; earnedBadges = {}; currentWeek = 1; syncQueue = [];
+    save(); renderAll(); buildInputPage(); buildRosterEditor();
+    showToast('ALL DATA RESET', 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════
+function goTab(id, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(`page-${id}`).classList.add('active');
+  el.classList.add('active');
+  document.querySelector('.scroll-area').scrollTop = 0;
+  if (id==='settings') { buildRosterEditor(); buildCoachEditor(); loadCodeWordField(); renderAttendanceLB(); }
+  renderAll();
+}
+
+// ══════════════════════════════════════════════════
+// MODALS
+// ══════════════════════════════════════════════════
+function showModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.querySelectorAll('.modal-bg').forEach(m => {
+  m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); });
+});
+
+// ══════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════
+let toastTimer;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+// ══════════════════════════════════════════════════
+// PWA INSTALL
+// ══════════════════════════════════════════════════
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstall = e;
+  document.getElementById('install-banner').classList.add('show');
+});
+
+function installApp() {
+  if (!deferredInstall) return;
+  deferredInstall.prompt();
+  deferredInstall.userChoice.then(r => {
+    if (r.outcome === 'accepted') {
+      document.getElementById('install-banner').classList.remove('show');
+      showToast('APP INSTALLED ✓','success');
+    }
+    deferredInstall = null;
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('install-banner').classList.remove('show');
+});
+
+// ══════════════════════════════════════════════════
+// SERVICE WORKER
+// ══════════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+
+// ══════════════════════════════════════════════════
+// PULL FROM SHEETS (two-way sync)
+// ══════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// PULL FROM SHEETS — JSONP (bypasses CORS on GET)
+// ══════════════════════════════════════════════════
+function pullFromSheets(manual = false) {
+  if (!scriptUrl) {
+    if (manual) showToast('Set Script URL first', 'error');
+    return Promise.resolve(false);
+  }
+  setSyncStatus('syncing');
+  if (manual) showToast('Pulling from Sheets...');
+
+  return new Promise((resolve) => {
+    // JSONP — inject a <script> tag that calls back with data
+    const cbName = '_bdPullCb_' + Date.now();
+    const timeout = setTimeout(() => {
+      cleanup();
+      setSyncStatus('off');
+      if (manual) {
+        showToast('PULL TIMED OUT — check connection', 'error');
+        showSyncStatus('err', 'Timed out. Check your network and try again.');
+      }
+      resolve(false);
+    }, 12000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[cbName];
+      const s = document.getElementById('_bd_jsonp');
+      if (s) s.remove();
+    }
+
+    window[cbName] = function(data) {
+      cleanup();
+      try {
+        applyPulledData(data, manual);
+        resolve(true);
+      } catch(err) {
+        setSyncStatus('off');
+        if (manual) {
+          showToast('PULL ERROR: ' + err.message, 'error');
+          showSyncStatus('err', 'Error: ' + err.message);
+        }
+        resolve(false);
+      }
+    };
+
+    const script = document.createElement('script');
+    script.id = '_bd_jsonp';
+    script.src = `${scriptUrl}?action=pull_state&callback=${cbName}`;
+    script.onerror = () => {
+      cleanup();
+      setSyncStatus('off');
+      if (manual) {
+        showToast('PULL FAILED — network error', 'error');
+        showSyncStatus('err', 'Network error. Make sure the script URL is correct.');
+      }
+      resolve(false);
+    };
+    document.head.appendChild(script);
+  });
+}
+
+function applyPulledData(data, manual = false) {
+  if (!data || !data.ok) {
+    throw new Error(data?.error || 'Bad response from Sheets');
+  }
+
+  const rCount = data.roster?.length || 0;
+  if (rCount === 0) {
+    setSyncStatus('ok');
+    if (manual) {
+      showToast('Sheets has no players yet — sync from laptop first', 'error');
+      showSyncStatus('warn', 'No players in Sheets. Do a FORCE FULL SYNC from your laptop first.');
+    }
+    return;
+  }
+
+  // Merge roster — Sheets is the authority on points
+  data.roster.forEach(remote => {
+    const local = roster.find(p =>
+      p.name.toLowerCase().trim() === remote.name.toLowerCase().trim()
+    );
+    if (local) {
+      local.pos     = remote.pos || local.pos;
+      local.pts     = Number(remote.pts) || local.pts;
+      local.weekPts = Number(remote.weekPts) || local.weekPts;
+      local.breakdown = {
+        practice:   Number(remote.breakdown?.practice)   || local.breakdown.practice   || 0,
+        attendance: Number(remote.breakdown?.attendance) || local.breakdown.attendance || 0,
+        academic:   Number(remote.breakdown?.academic)   || local.breakdown.academic   || 0,
+        strength:   Number(remote.breakdown?.strength)   || local.breakdown.strength   || 0,
+        compete:    Number(remote.breakdown?.compete)    || local.breakdown.compete    || 0,
+        culture:    Number(remote.breakdown?.culture)    || local.breakdown.culture    || 0,
+        behavior:   Number(remote.breakdown?.behavior)  || local.breakdown.behavior   || 0,
+        service:    Number(remote.breakdown?.service)   || local.breakdown.service    || 0,
+      };
+    } else {
+      // Player exists in Sheets but not locally — add them
+      roster.push({
+        id: Math.max(...roster.map(p => p.id), 0) + 1,
+        name: remote.name,
+        pos:  remote.pos || 'QB',
+        pts:  Number(remote.pts) || 0,
+        weekPts: Number(remote.weekPts) || 0,
+        breakdown: {
+          practice:0, attendance:0, academic:0, strength:0,
+          compete:0, culture:0, behavior:0, service:0,
+          ...remote.breakdown,
+        }
+      });
+    }
+  });
+
+  // Restore activity log if local is empty
+  if (data.recentLogs?.length > 0 && activity.length === 0) {
+    data.recentLogs.forEach(log => {
+      const player = roster.find(p =>
+        p.name.toLowerCase() === log.name.toLowerCase()
+      );
+      log.pid = player ? player.id : 0;
+    });
+    activity = data.recentLogs;
+  }
+
+  // Restore week
+  if (data.currentWeek) currentWeek = data.currentWeek;
+
+  save();
+  buildInputPage();
+  buildRosterEditor();
+  buildCoachEditor();
+  renderAll();
+  setSyncStatus('ok');
+
+  if (manual) {
+    showToast(`✓ SYNCED — ${rCount} players loaded`, 'success');
+    showSyncStatus('ok', `${rCount} players · Week ${currentWeek} · ${new Date().toLocaleTimeString()}`);
+  }
+}
+
+
+function renderAll() {
+  renderLB();
+  renderActivity();
+  renderGroups();
+  renderCoaches();
+  renderBadges();
+}
+
+// ══════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════
+load();
+buildInputPage();
+renderAll();
+renderSystem();
+buildCoachEditor();
+setSyncStatus(scriptUrl ? 'ok' : 'off');
+isOnline = navigator.onLine;
+if (!isOnline) document.getElementById('offline-bar').classList.add('show');
+
+// Pull from Sheets on every load — keeps all devices in sync automatically
+if (isOnline) {
+  setTimeout(() => pullFromSheets(false), 900);
+}
+
+// Pull again whenever the app comes back into focus (coach switches tabs/apps)
+let _lastFocusPull = 0;
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && isOnline) {
+    const now = Date.now();
+    // Throttle — only pull if it's been more than 60 seconds since last pull
+    if (now - _lastFocusPull > 60000) {
+      _lastFocusPull = now;
+      pullFromSheets(false);
+    }
+  }
+});
+
+// Track last pull time on focus events
+_lastFocusPull = Date.now();
+</script>
+</body>
+</html>
