@@ -556,8 +556,13 @@ function getRankLabel(pct) {
 // POPULATE PLAYER SELECTS
 // ══════════════════════════════════════════════════
 function populateSelects() {
+  const sorted = [...roster].sort((a,b) => {
+    const fa = (a.name||'').split(' ')[0].toLowerCase();
+    const fb = (b.name||'').split(' ')[0].toLowerCase();
+    return fa.localeCompare(fb);
+  });
   const opts = '<option value="">— Select your name —</option>' +
-    roster.map(p => `<option value="${p.id}">${p.name} (${p.pos})</option>`).join('');
+    sorted.map(p => `<option value="${p.id}">${p.name} (${p.pos})</option>`).join('');
   document.getElementById('sel-player').innerHTML = opts;
   document.getElementById('my-player-sel').innerHTML = opts;
 }
@@ -745,7 +750,6 @@ function resetCheckin() {
 // ══════════════════════════════════════════════════
 function renderLeaderboard() {
   const possible = getTotalPossibleToDate();
-  const allTime = getTotalPossibleAllTime();
 
   // Stats
   document.getElementById('b-players').textContent = roster.length;
@@ -754,8 +758,8 @@ function renderLeaderboard() {
 
   const sorted = [...roster].map(p => ({
     ...p,
-    pts: getPlayerPts(p.id),
-    pct: getPctOfPossible(p.id),
+    pts: getUnifiedPts(p.id),
+    pct: getUnifiedPct(p.id),
   })).sort((a,b) => b.pct - a.pct || b.pts - a.pts);
 
   const rc = ['gold-rank','silver-rank','bronze-rank'];
@@ -799,10 +803,10 @@ function renderMyStats() {
   const player = roster.find(p => p.id.toString() === pid.toString());
   if (!player) return;
 
-  const pts = getPlayerPts(pid);
+  const pts = getUnifiedPts(pid);
   const possible = getTotalPossibleToDate();
   const allTime = getTotalPossibleAllTime();
-  const pct = getPctOfPossible(pid);
+  const pct = getUnifiedPct(pid);
   const pctColor = getPctColor(pct);
   const rankLabel = getRankLabel(pct);
   const bd = getPlayerBreakdown(pid);
@@ -868,39 +872,95 @@ function renderMyStats() {
 }
 
 // ══════════════════════════════════════════════════
-// PULL ROSTER FROM SHEETS (JSONP)
+// PULL FULL STATE FROM SHEETS (JSONP)
+// Pulls roster WITH points so leaderboard is live across all devices
 // ══════════════════════════════════════════════════
 function pullRosterFromSheets() {
   if (!SCRIPT_URL) return;
+
+  // Prevent overlapping calls
+  if (window._bdPulling) return;
+  window._bdPulling = true;
+
   const cbName = '_bdAthletePull_' + Date.now();
   const timeout = setTimeout(() => {
+    window._bdPulling = false;
     delete window[cbName];
     const s = document.getElementById('_bd_athlete_jsonp');
     if (s) s.remove();
-  }, 10000);
+  }, 12000);
 
   window[cbName] = function(data) {
     clearTimeout(timeout);
+    window._bdPulling = false;
     delete window[cbName];
     const s = document.getElementById('_bd_athlete_jsonp');
     if (s) s.remove();
-    if (data?.ok && data.roster?.length) {
-      roster = data.roster.map(r => ({
+
+    if (!data?.ok || !data.roster?.length) return;
+
+    // Build a map of local check-in pts by player name
+    const localPtsByName = {};
+    checkins.forEach(c => {
+      const key = c.playerName?.toLowerCase().trim();
+      if (key) localPtsByName[key] = (localPtsByName[key] || 0) + (c.pts || 2);
+    });
+
+    // Merge Sheets roster with local checkins
+    // Take the HIGHER of Sheets pts vs local pts (handles both online and offline)
+    roster = data.roster.map(r => {
+      const localKey = r.name?.toLowerCase().trim();
+      const localPts = localPtsByName[localKey] || 0;
+      const sheetsPts = Number(r.pts) || 0;
+      // Use attendance breakdown from Sheets, supplement with local check-ins
+      const attendancePts = Math.max(sheetsPts, localPts);
+
+      return {
         id: r.id || r.name,
         name: r.name,
         pos: r.pos || 'QB',
-      }));
-      saveLocal();
-      populateSelects();
-      renderAll();
-    }
+        // For checkin app, pts = attendance category from Sheets + local checkins
+        sheetsPts: attendancePts,
+        // breakdown from sheets
+        breakdown: r.breakdown || {},
+      };
+    });
+
+    saveLocal();
+    populateSelects();
+    renderAll();
   };
 
   const script = document.createElement('script');
   script.id = '_bd_athlete_jsonp';
   script.src = `${SCRIPT_URL}?action=pull_state&callback=${cbName}`;
-  script.onerror = () => { clearTimeout(timeout); script.remove(); };
+  script.onerror = () => {
+    clearTimeout(timeout);
+    window._bdPulling = false;
+    script.remove();
+  };
   document.head.appendChild(script);
+}
+
+// ══════════════════════════════════════════════════
+// UNIFIED POINTS — combines Sheets pts + local checkins
+// ══════════════════════════════════════════════════
+function getUnifiedPts(playerId) {
+  // Local check-in pts on this device
+  const localPts = getPlayerPts(playerId);
+  // Sheets pts (pulled from roster)
+  const player = roster.find(p => p.id?.toString() === playerId?.toString());
+  const sheetsPts = player?.sheetsPts || 0;
+  // Return whichever is higher — prevents double-counting
+  // If local > sheets, local checkins haven't synced yet
+  // If sheets > local, this device hasn't checked in but Sheets has the data
+  return Math.max(localPts, sheetsPts);
+}
+
+function getUnifiedPct(playerId) {
+  const possible = getTotalPossibleToDate();
+  if (!possible) return 0;
+  return Math.round((getUnifiedPts(playerId) / possible) * 100);
 }
 
 // ══════════════════════════════════════════════════
@@ -975,21 +1035,32 @@ populateSelects();
 renderAll();
 updateTodayBadge();
 
-// Pull fresh roster from Sheets
+// Pull fresh roster + points from Sheets on load
 pullRosterFromSheets();
 syncCodeWord();
 
-// Refresh code word every 60 seconds (coach may change mid-session)
+// Auto-refresh leaderboard every 2 minutes — keeps board live across all athlete phones
+setInterval(() => {
+  pullRosterFromSheets();
+}, 120000);
+
+// Refresh code word every 60 seconds
 setInterval(syncCodeWord, 60000);
 
-// Refresh on focus
+// Refresh on focus — critical for shared leaderboard accuracy
+let _lastAthletePull = 0;
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     syncCodeWord();
-    pullRosterFromSheets();
+    const now = Date.now();
+    if (now - _lastAthletePull > 30000) {
+      _lastAthletePull = now;
+      pullRosterFromSheets();
+    }
     renderAll();
   }
 });
+_lastAthletePull = Date.now();
 </script>
 </body>
 </html>

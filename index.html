@@ -276,10 +276,17 @@ body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;d
 <!-- ═══ LOG POINTS ═══ -->
 <div id="page-input" class="page">
   <div class="stitle">LOG POINTS</div>
+
   <div class="input-section">
     <span class="input-label">Player</span>
     <select class="select-field" id="sel-player" onchange="checkSubmit()"></select>
   </div>
+
+  <div class="input-section">
+    <span class="input-label">Date <span style="color:var(--muted);font-size:10px;letter-spacing:.5px">(default = today, change to backdate)</span></span>
+    <input type="date" class="select-field" id="log-date" style="font-size:16px" onchange="checkSubmit()">
+  </div>
+
   <div class="input-section">
     <span class="input-label">Category</span>
     <div class="cat-grid" id="cat-grid"></div>
@@ -361,6 +368,22 @@ body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;d
 
 <!-- ═══ SETTINGS ═══ -->
 <div id="page-settings" class="page">
+
+  <!-- ADMIN UNLOCK -->
+  <div id="admin-locked-banner" style="background:var(--card);border:1px solid var(--gold);border-radius:10px;padding:14px;margin-bottom:14px;display:flex;align-items:center;gap:12px">
+    <span style="font-size:24px">🔒</span>
+    <div style="flex:1">
+      <div style="font-family:'Bebas Neue';font-size:16px;letter-spacing:2px;color:var(--gold)">ADMIN MODE LOCKED</div>
+      <div style="font-family:'Barlow';font-size:11px;color:var(--muted)">Roster editing and reset functions require Admin PIN</div>
+    </div>
+    <button onclick="showModal('admin-pin-modal')" style="background:var(--maroon);border:none;border-radius:6px;padding:8px 14px;font-family:'Bebas Neue';font-size:14px;letter-spacing:2px;color:#fff;cursor:pointer">UNLOCK</button>
+  </div>
+  <div id="admin-unlocked-banner" style="background:rgba(42,140,74,.1);border:1px solid #4caf50;border-radius:10px;padding:10px 14px;margin-bottom:14px;display:none;align-items:center;gap:10px">
+    <span style="font-size:18px">🔓</span>
+    <div style="font-family:'Barlow Condensed';font-size:13px;color:#4caf50;letter-spacing:.5px;flex:1">ADMIN MODE ACTIVE — Full access enabled</div>
+    <button onclick="lockAdmin()" style="background:none;border:1px solid #4caf50;border-radius:5px;padding:4px 10px;font-family:'Barlow Condensed';font-size:11px;color:#4caf50;cursor:pointer;letter-spacing:1px">LOCK</button>
+  </div>
+
   <div class="stitle">GOOGLE SHEETS SETUP</div>
   <div class="settings-section">
     <div class="settings-title">APPS SCRIPT URL</div>
@@ -369,8 +392,18 @@ body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;d
     <div id="sync-status"></div>
     <button class="settings-btn" onclick="testConnection()">TEST CONNECTION</button>
     <button class="settings-btn" onclick="saveScriptUrl()">SAVE URL</button>
-    <button class="settings-btn" onclick="forceSyncAll()">FORCE FULL SYNC NOW</button>
-    <button class="settings-btn" onclick="pullFromSheets(true)">⬇ PULL FROM SHEETS</button>
+
+    <div style="height:1px;background:var(--border);margin:12px 0"></div>
+
+    <div style="font-family:'Barlow Condensed';font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-bottom:6px">⬇ PULL FIRST — then sync</div>
+    <button class="settings-btn" onclick="pullFromSheets(true)" style="border-color:#4caf50;color:#4caf50">⬇ PULL FROM SHEETS (get latest data)</button>
+
+    <div style="font-family:'Barlow Condensed';font-size:10px;letter-spacing:2px;color:var(--gold);text-transform:uppercase;margin-top:10px;margin-bottom:6px">⬆ SYNC OPTIONS</div>
+    <button class="settings-btn" onclick="syncRosterOnly()" style="border-color:var(--gold);color:var(--gold)">⬆ SYNC ROSTER ONLY ✓ safe anytime</button>
+    <p style="font-family:'Barlow';font-size:10px;color:var(--muted);margin:4px 0 10px;line-height:1.5">Adds/removes players in Sheets. Never changes point totals. Use this when editing your roster.</p>
+
+    <button class="settings-btn" onclick="forceSyncAll()" style="opacity:.7">⚠ FORCE FULL SYNC — overwrites all points</button>
+    <p style="font-family:'Barlow';font-size:10px;color:var(--muted);margin-top:4px;line-height:1.5">Only use this to recover from a major data issue. Pull from Sheets first.</p>
   </div>
 
   <div class="stitle">COACHING STAFF EDITOR</div>
@@ -403,12 +436,14 @@ body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;d
     <div id="attend-lb" style="max-height:360px;overflow-y:auto"></div>
   </div>
 
+  <div id="roster-editor-section" style="display:none">
   <div class="stitle">ROSTER EDITOR</div>
   <div class="settings-section">
     <div class="settings-title">PLAYERS</div>
     <div class="roster-editor" id="roster-editor"></div>
     <button class="settings-btn" onclick="addRosterRow()" style="margin-top:8px">+ ADD PLAYER</button>
     <button class="settings-btn" onclick="saveRoster()" style="background:rgba(139,28,28,.15);border-color:var(--maroon)">SAVE ROSTER</button>
+  </div>
   </div>
 
   <div class="stitle">WEEK MANAGEMENT</div>
@@ -422,10 +457,12 @@ body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;d
     <div id="import-status" style="font-family:'Barlow Condensed';font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:.5px"></div>
   </div>
 
+  <div id="danger-section" style="display:none">
   <div class="stitle">DANGER ZONE</div>
   <div class="settings-section">
     <button class="settings-btn danger" onclick="confirmResetPoints()">RESET POINTS ONLY (KEEP ROSTER)</button>
     <button class="settings-btn danger" onclick="confirmReset()" style="margin-top:6px;opacity:.6">RESET EVERYTHING (WIPE ALL DATA)</button>
+  </div>
   </div>
 </div>
 
@@ -449,6 +486,32 @@ body{background:var(--black);color:var(--text);font-family:'Barlow',sans-serif;d
       <option value="17">Week 17 — Aug 24</option>
     </select>
     <button class="submit-btn" onclick="advanceWeek()">LOCK IN WEEK</button>
+  </div>
+</div>
+
+<div class="modal-bg" id="admin-pin-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('admin-pin-modal')">✕</button>
+    <h2>ADMIN PIN</h2>
+    <p style="font-family:'Barlow';font-size:12px;color:var(--muted);margin-bottom:14px" id="admin-modal-sub">Enter your 4-digit admin PIN to unlock roster editing and reset functions.</p>
+    <input type="number" class="select-field" id="admin-pin-input"
+      placeholder="· · · ·"
+      style="font-size:28px;text-align:center;letter-spacing:8px;font-family:'Bebas Neue';margin-bottom:10px"
+      maxlength="4" oninput="if(this.value.length>4)this.value=this.value.slice(0,4)">
+    <div id="admin-pin-error" style="font-family:'Barlow Condensed';font-size:12px;color:#f44;text-align:center;margin-bottom:8px;display:none">WRONG PIN — Try again</div>
+    <button class="submit-btn" id="admin-unlock-btn" onclick="submitAdminPin()">UNLOCK</button>
+
+    <!-- Only visible if no PIN has been set in Sheets yet -->
+    <div id="set-pin-section" style="display:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <div style="font-family:'Barlow Condensed';font-size:11px;color:var(--gold);letter-spacing:.5px;margin-bottom:6px">⚠ NO PIN SET — You are the first to set this. It will lock for everyone else once saved.</div>
+      <input type="number" class="select-field" id="new-pin-input"
+        placeholder="Choose 4-digit PIN"
+        style="font-size:20px;text-align:center;letter-spacing:4px;font-family:'Bebas Neue';margin-bottom:6px"
+        maxlength="4" oninput="if(this.value.length>4)this.value=this.value.slice(0,4)">
+      <button onclick="setAdminPin()" style="width:100%;background:var(--maroon);border:none;border-radius:8px;padding:12px;font-family:'Bebas Neue';font-size:16px;letter-spacing:2px;color:#fff;cursor:pointer">SET MASTER PIN</button>
+    </div>
+
+    <div id="pin-loading" style="text-align:center;font-family:'Barlow Condensed';font-size:12px;color:var(--muted);letter-spacing:1px;margin-top:8px;display:none">Checking with server...</div>
   </div>
 </div>
 
@@ -615,17 +678,11 @@ let roster = [], activity = [], coachData = [...COACHES];
 let earnedBadges = {}, currentFilter = 'all', currentWeek = 1;
 let selCat = null, selAction = null, scriptUrl = '', syncQueue = [], isOnline = true;
 let deferredInstall = null;
+let isAdmin = false; // unlocked by PIN each session
 
-const DEFAULT_ROSTER = [
-  {id:1,name:'Marcus J.',pos:'QB'},{id:2,name:'Devon T.',pos:'WR'},{id:3,name:'Caleb M.',pos:'WR'},
-  {id:4,name:'Jordan H.',pos:'RB'},{id:5,name:'Tyler B.',pos:'OL'},{id:6,name:'Chris P.',pos:'OL'},
-  {id:7,name:'Darius W.',pos:'OL'},{id:8,name:'Andre L.',pos:'TE'},{id:9,name:'Malik S.',pos:'DB'},
-  {id:10,name:'Trey C.',pos:'DB'},{id:11,name:'Jaylen R.',pos:'LB'},{id:12,name:'Marcus K.',pos:'LB'},
-  {id:13,name:'Elijah F.',pos:'DL'},{id:14,name:'Desean N.',pos:'DL'},{id:15,name:'Isaiah G.',pos:'QB'},
-  {id:16,name:'Noah A.',pos:'WR'},{id:17,name:'Zach D.',pos:'RB'},{id:18,name:'Evan O.',pos:'OL'},
-  {id:19,name:'Kyle V.',pos:'TE'},{id:20,name:'Sam E.',pos:'DB'},{id:21,name:'Aaron Y.',pos:'LB'},
-  {id:22,name:'Bryce I.',pos:'DL'},
-];
+// DEFAULT_ROSTER is intentionally empty — Sheets is the master roster
+// Never falls back to placeholder names
+const DEFAULT_ROSTER = [];
 
 function blankPlayer(p) {
   return {...p, pts:0, weekPts:0, breakdown:{
@@ -639,19 +696,33 @@ function blankPlayer(p) {
 // ══════════════════════════════════════════════════
 function load() {
   try {
-    roster       = JSON.parse(localStorage.getItem('bd_roster'))    || DEFAULT_ROSTER.map(blankPlayer);
+    const savedRoster = localStorage.getItem('bd_roster');
+    // Only use saved roster if it exists AND has real players (not placeholder names)
+    if (savedRoster) {
+      const parsed = JSON.parse(savedRoster);
+      // Filter out any placeholder names from old default roster
+      const placeholders = ['Marcus J.','Devon T.','Caleb M.','Jordan H.','Tyler B.',
+        'Chris P.','Darius W.','Andre L.','Malik S.','Trey C.','Jaylen R.','Marcus K.',
+        'Elijah F.','Desean N.','Isaiah G.','Noah A.','Zach D.','Evan O.','Kyle V.',
+        'Sam E.','Aaron Y.','Bryce I.'];
+      const real = parsed.filter(p => !placeholders.includes(p.name));
+      roster = real.length > 0 ? real : [];
+    } else {
+      roster = [];
+    }
     activity     = JSON.parse(localStorage.getItem('bd_activity'))  || [];
     coachData    = JSON.parse(localStorage.getItem('bd_coaches'))   || [...COACHES];
     earnedBadges = JSON.parse(localStorage.getItem('bd_badges'))    || {};
     currentWeek  = parseInt(localStorage.getItem('bd_week'))        || 1;
-    // Use saved URL, fall back to hardcoded default
     scriptUrl    = localStorage.getItem('bd_script_url')            || HARDCODED_SCRIPT_URL;
     syncQueue    = JSON.parse(localStorage.getItem('bd_queue'))     || [];
-    if (!roster[0]?.breakdown?.attendance) {
-      roster = roster.map(r => blankPlayer({id:r.id||Date.now(),name:r.name,pos:r.pos}));
-    }
+    // Migrate old breakdowns
+    roster = roster.map(r => {
+      if (!r.breakdown?.attendance) return blankPlayer({id:r.id||Date.now(),name:r.name,pos:r.pos});
+      return r;
+    });
   } catch(e) {
-    roster = DEFAULT_ROSTER.map(blankPlayer);
+    roster = [];
     scriptUrl = HARDCODED_SCRIPT_URL;
   }
 }
@@ -746,7 +817,6 @@ async function flushQueue() {
 async function manualSync() {
   if (!scriptUrl) { showToast('Set Script URL in Setup tab','error'); return; }
   setSyncStatus('syncing');
-  // Full sync
   const payload = {
     action: 'sync_all',
     week: currentWeek,
@@ -770,7 +840,32 @@ async function manualSync() {
   }
 }
 
-async function forceSyncAll() { await manualSync(); }
+// ── ROSTER ONLY SYNC — safe to run anytime, never touches points ──
+async function syncRosterOnly() {
+  if (!scriptUrl) { showToast('Set Script URL in Setup tab','error'); return; }
+  setSyncStatus('syncing');
+  const ok = await postToSheets({
+    action: 'sync_roster_only',
+    roster: roster.map(p => ({
+      id: p.id,
+      name: p.name,
+      pos: p.pos,
+      // deliberately omit pts and breakdown — Sheets keeps existing values
+    })),
+  });
+  if (ok) {
+    showToast('ROSTER SYNCED ✓ — points untouched','success');
+    setSyncStatus('ok');
+  } else {
+    showToast('ROSTER SYNC FAILED — queued','error');
+    setSyncStatus('off');
+  }
+}
+
+async function forceSyncAll() {
+  if (!confirm('FORCE FULL SYNC overwrites ALL point totals in Sheets with what is on this device.\n\nPull from Sheets first if other coaches have logged points recently.\n\nContinue?')) return;
+  await manualSync();
+}
 
 async function testConnection() {
   const url = document.getElementById('script-url').value.trim();
@@ -913,8 +1008,13 @@ function filterLB(cat, el) {
 // ══════════════════════════════════════════════════
 function buildInputPage() {
   const sel = document.getElementById('sel-player');
+  const sorted = [...roster].sort((a,b) => {
+    const fa = (a.name||'').split(' ')[0].toLowerCase();
+    const fb = (b.name||'').split(' ')[0].toLowerCase();
+    return fa.localeCompare(fb);
+  });
   sel.innerHTML = '<option value="">— Choose player —</option>' +
-    roster.map(p=>`<option value="${p.id}">${p.name} (${p.pos})</option>`).join('');
+    sorted.map(p=>`<option value="${p.id}">${p.name} (${p.pos})</option>`).join('');
 
   document.getElementById('cat-grid').innerHTML = CATEGORIES.map(c=>
     `<div class="cat-btn" onclick="selectCat('${c.id}',this)">
@@ -961,22 +1061,35 @@ async function submitPoints() {
   const actionObj = cat.actions[selAction.idx];
   const pts = selAction.pts;
 
+  // Use selected date — supports backdating up to 7 days
+  const dateField = document.getElementById('log-date');
+  const logDateStr = dateField?.value || '';
+  const logTime = logDateStr
+    ? new Date(logDateStr + 'T12:00:00').toISOString()
+    : new Date().toISOString();
+  const isBackdated = logDateStr && logDateStr !== (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  })();
+
   player.pts += pts;
   player.weekPts += pts;
   player.breakdown[selCat] = (player.breakdown[selCat]||0) + pts;
 
   const entry = {
     pid, name:player.name, pos:player.pos, cat:selCat,
-    icon:cat.icon, label:actionObj.label, pts,
+    icon:cat.icon, label:actionObj.label + (isBackdated ? ` [${logDateStr}]` : ''), pts,
     seasonTotal: player.pts, weekTotal: player.weekPts,
     breakdown: {...player.breakdown},
-    time: new Date().toISOString()
+    time: logTime,
+    backdated: isBackdated || false,
   };
   activity.unshift(entry);
   checkAndAwardBadges(player);
   save();
   await logPointToSheets(entry);
-  showToast(`${pts>0?'+':''}${pts} → ${player.name}`,'success');
+  const label = isBackdated ? `+${pts} → ${player.name} (${logDateStr})` : `${pts>0?'+':''}${pts} → ${player.name}`;
+  showToast(label, 'success');
   renderAll();
   resetInput();
 }
@@ -1292,6 +1405,200 @@ function renderAttendanceLB() {
 }
 
 
+// ══════════════════════════════════════════════════
+// ADMIN PIN — stored in Google Script Properties
+// One master PIN for the entire program
+// ══════════════════════════════════════════════════
+let _pinIsSet = null;   // null=unknown, true=set, false=not set yet
+let _pinChecking = false;
+
+// Called when coach taps UNLOCK button
+function showAdminModal() {
+  document.getElementById('admin-pin-input').value = '';
+  document.getElementById('admin-pin-error').style.display = 'none';
+  document.getElementById('set-pin-section').style.display = 'none';
+  document.getElementById('pin-loading').style.display = 'block';
+  document.getElementById('admin-unlock-btn').disabled = true;
+  showModal('admin-pin-modal');
+  checkPinStatus();
+}
+
+// Update UNLOCK button to call showAdminModal instead of showModal directly
+document.addEventListener('DOMContentLoaded', () => {
+  const unlockBtn = document.querySelector('[onclick="showModal(\'admin-pin-modal\')"]');
+  if (unlockBtn) unlockBtn.setAttribute('onclick', 'showAdminModal()');
+});
+
+function checkPinStatus() {
+  if (!scriptUrl) {
+    // No connection — fall back to local PIN if set
+    const localPin = localStorage.getItem('bd_admin_pin');
+    document.getElementById('pin-loading').style.display = 'none';
+    document.getElementById('admin-unlock-btn').disabled = false;
+    if (!localPin) {
+      document.getElementById('set-pin-section').style.display = 'block';
+      document.getElementById('admin-modal-sub').textContent = 'No PIN set yet. Set the master PIN below — it applies to all devices.';
+    }
+    return;
+  }
+
+  const cbName = '_bdPinCheck_' + Date.now();
+  const timeout = setTimeout(() => {
+    delete window[cbName];
+    const s = document.getElementById('_bd_pin_jsonp');
+    if (s) s.remove();
+    // Timeout — fall back to local
+    document.getElementById('pin-loading').style.display = 'none';
+    document.getElementById('admin-unlock-btn').disabled = false;
+    const localPin = localStorage.getItem('bd_admin_pin');
+    if (!localPin) document.getElementById('set-pin-section').style.display = 'block';
+  }, 6000);
+
+  window[cbName] = function(data) {
+    clearTimeout(timeout);
+    delete window[cbName];
+    const s = document.getElementById('_bd_pin_jsonp');
+    if (s) s.remove();
+    document.getElementById('pin-loading').style.display = 'none';
+    document.getElementById('admin-unlock-btn').disabled = false;
+
+    if (data?.ok) {
+      _pinIsSet = data.pinIsSet;
+      if (!data.pinIsSet) {
+        // No PIN in Sheets yet — show set PIN section
+        document.getElementById('set-pin-section').style.display = 'block';
+        document.getElementById('admin-modal-sub').textContent = 'No master PIN has been set yet. You are the first — set it below.';
+        document.getElementById('admin-unlock-btn').style.display = 'none';
+      } else {
+        document.getElementById('set-pin-section').style.display = 'none';
+        document.getElementById('admin-unlock-btn').style.display = 'block';
+      }
+    }
+  };
+
+  const script = document.createElement('script');
+  script.id = '_bd_pin_jsonp';
+  script.src = `${scriptUrl}?action=check_pin&callback=${cbName}`;
+  script.onerror = () => {
+    clearTimeout(timeout);
+    script.remove();
+    document.getElementById('pin-loading').style.display = 'none';
+    document.getElementById('admin-unlock-btn').disabled = false;
+  };
+  document.head.appendChild(script);
+}
+
+async function setAdminPin() {
+  const pin = document.getElementById('new-pin-input').value.trim();
+  if (pin.length !== 4 || isNaN(pin)) {
+    showToast('PIN must be exactly 4 digits', 'error'); return;
+  }
+  // Push to Sheets/Script Properties
+  const ok = await postToSheets({ action: 'set_admin_pin', pin });
+  if (ok) {
+    // Also cache locally as fallback
+    localStorage.setItem('bd_admin_pin', pin);
+    _pinIsSet = true;
+    showToast('MASTER PIN SET ✓ — locked for all devices', 'success');
+    document.getElementById('new-pin-input').value = '';
+    document.getElementById('set-pin-section').style.display = 'none';
+    document.getElementById('admin-unlock-btn').style.display = 'block';
+    document.getElementById('admin-modal-sub').textContent = 'Enter your 4-digit admin PIN to unlock.';
+    // Auto-unlock for the coach who just set it
+    isAdmin = true;
+    closeModal('admin-pin-modal');
+    updateAdminUI();
+    showToast('🔓 ADMIN UNLOCKED — PIN saved to server', 'success');
+  } else {
+    showToast('Could not save to server — check connection', 'error');
+  }
+}
+
+async function submitAdminPin() {
+  const entered = document.getElementById('admin-pin-input').value.trim();
+  const errEl   = document.getElementById('admin-pin-error');
+  if (!entered || entered.length !== 4) {
+    errEl.textContent = 'Enter your 4-digit PIN';
+    errEl.style.display = 'block'; return;
+  }
+
+  // Verify against server
+  errEl.style.display = 'none';
+  document.getElementById('admin-unlock-btn').disabled = true;
+  document.getElementById('admin-unlock-btn').textContent = 'CHECKING...';
+
+  const ok = await postToSheets({ action: 'verify_admin_pin', pin: entered });
+
+  document.getElementById('admin-unlock-btn').disabled = false;
+  document.getElementById('admin-unlock-btn').textContent = 'UNLOCK';
+
+  if (ok) {
+    // Cache locally for offline fallback
+    localStorage.setItem('bd_admin_pin', entered);
+    isAdmin = true;
+    errEl.style.display = 'none';
+    document.getElementById('admin-pin-input').value = '';
+    closeModal('admin-pin-modal');
+    updateAdminUI();
+    showToast('🔓 ADMIN UNLOCKED', 'success');
+  } else {
+    // Server said wrong — also check local cache in case offline
+    const localPin = localStorage.getItem('bd_admin_pin');
+    if (localPin && entered === localPin) {
+      isAdmin = true;
+      document.getElementById('admin-pin-input').value = '';
+      closeModal('admin-pin-modal');
+      updateAdminUI();
+      showToast('🔓 ADMIN UNLOCKED (offline)', 'success');
+    } else {
+      errEl.textContent = 'WRONG PIN — Try again';
+      errEl.style.display = 'block';
+      document.getElementById('admin-pin-input').value = '';
+    }
+  }
+}
+
+function lockAdmin() {
+  isAdmin = false;
+  updateAdminUI();
+  showToast('ADMIN LOCKED');
+}
+
+function updateAdminUI() {
+  const locked   = document.getElementById('admin-locked-banner');
+  const unlocked = document.getElementById('admin-unlocked-banner');
+  const rosterEl = document.getElementById('roster-editor-section');
+  const dangerEl = document.getElementById('danger-section');
+  if (isAdmin) {
+    if (locked)   locked.style.display   = 'none';
+    if (unlocked) unlocked.style.display = 'flex';
+    if (rosterEl) rosterEl.style.display = 'block';
+    if (dangerEl) dangerEl.style.display = 'block';
+  } else {
+    if (locked)   locked.style.display   = 'flex';
+    if (unlocked) unlocked.style.display = 'none';
+    if (rosterEl) rosterEl.style.display = 'none';
+    if (dangerEl) dangerEl.style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════════════════
+// BACKDATE — set date field when log tab opens
+// ══════════════════════════════════════════════════
+function setLogDateToday() {
+  const el = document.getElementById('log-date');
+  if (!el || el.value) return; // don't reset if coach already changed it
+  const d = new Date();
+  const str = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  if (!el.value) el.value = str;
+  el.max = str;
+  const week = new Date(d - 7*24*60*60*1000);
+  el.min = `${week.getFullYear()}-${String(week.getMonth()+1).padStart(2,'0')}-${String(week.getDate()).padStart(2,'0')}`;
+}
+
+// ══════════════════════════════════════════════════
+// SETTINGS — ROSTER EDITOR
+// ══════════════════════════════════════════════════
 function buildRosterEditor() {
   const el = document.getElementById('roster-editor');
   el.innerHTML = roster.map((p,i)=>`
@@ -1587,7 +1894,8 @@ function goTab(id, el) {
   document.getElementById(`page-${id}`).classList.add('active');
   el.classList.add('active');
   document.querySelector('.scroll-area').scrollTop = 0;
-  if (id==='settings') { buildRosterEditor(); buildCoachEditor(); loadCodeWordField(); renderAttendanceLB(); }
+  if (id==='settings') { buildRosterEditor(); buildCoachEditor(); loadCodeWordField(); renderAttendanceLB(); updateAdminUI(); }
+  if (id==='input') { setLogDateToday(); }
   renderAll();
 }
 
@@ -1718,46 +2026,36 @@ function applyPulledData(data, manual = false) {
   if (rCount === 0) {
     setSyncStatus('ok');
     if (manual) {
-      showToast('Sheets has no players yet — sync from laptop first', 'error');
-      showSyncStatus('warn', 'No players in Sheets. Do a FORCE FULL SYNC from your laptop first.');
+      showToast('Sheets has no players yet — admin must sync first', 'error');
+      showSyncStatus('warn', 'No players in Sheets. Admin must do a FORCE FULL SYNC first.');
     }
     return;
   }
 
-  // Merge roster — Sheets is the authority on points
-  data.roster.forEach(remote => {
+  // Sheets is always the authority on roster — replace local completely
+  // This ensures all coaches always have the master roster from Baker
+  roster = data.roster.map(remote => {
+    // Preserve local points if Sheets has 0 (offline logging not yet synced)
     const local = roster.find(p =>
       p.name.toLowerCase().trim() === remote.name.toLowerCase().trim()
     );
-    if (local) {
-      local.pos     = remote.pos || local.pos;
-      local.pts     = Number(remote.pts) || local.pts;
-      local.weekPts = Number(remote.weekPts) || local.weekPts;
-      local.breakdown = {
-        practice:   Number(remote.breakdown?.practice)   || local.breakdown.practice   || 0,
-        attendance: Number(remote.breakdown?.attendance) || local.breakdown.attendance || 0,
-        academic:   Number(remote.breakdown?.academic)   || local.breakdown.academic   || 0,
-        strength:   Number(remote.breakdown?.strength)   || local.breakdown.strength   || 0,
-        compete:    Number(remote.breakdown?.compete)    || local.breakdown.compete    || 0,
-        culture:    Number(remote.breakdown?.culture)    || local.breakdown.culture    || 0,
-        behavior:   Number(remote.breakdown?.behavior)  || local.breakdown.behavior   || 0,
-        service:    Number(remote.breakdown?.service)   || local.breakdown.service    || 0,
-      };
-    } else {
-      // Player exists in Sheets but not locally — add them
-      roster.push({
-        id: Math.max(...roster.map(p => p.id), 0) + 1,
-        name: remote.name,
-        pos:  remote.pos || 'QB',
-        pts:  Number(remote.pts) || 0,
-        weekPts: Number(remote.weekPts) || 0,
-        breakdown: {
-          practice:0, attendance:0, academic:0, strength:0,
-          compete:0, culture:0, behavior:0, service:0,
-          ...remote.breakdown,
-        }
-      });
-    }
+    return {
+      id: remote.id || (local?.id) || Date.now(),
+      name: remote.name,
+      pos: remote.pos || local?.pos || 'QB',
+      pts: Math.max(Number(remote.pts)||0, local?.pts||0),
+      weekPts: Math.max(Number(remote.weekPts)||0, local?.weekPts||0),
+      breakdown: {
+        practice:   Math.max(Number(remote.breakdown?.practice)||0,   local?.breakdown?.practice||0),
+        attendance: Math.max(Number(remote.breakdown?.attendance)||0, local?.breakdown?.attendance||0),
+        academic:   Math.max(Number(remote.breakdown?.academic)||0,   local?.breakdown?.academic||0),
+        strength:   Math.max(Number(remote.breakdown?.strength)||0,   local?.breakdown?.strength||0),
+        compete:    Math.max(Number(remote.breakdown?.compete)||0,    local?.breakdown?.compete||0),
+        culture:    Math.max(Number(remote.breakdown?.culture)||0,    local?.breakdown?.culture||0),
+        behavior:   Math.max(Number(remote.breakdown?.behavior)||0,   local?.breakdown?.behavior||0),
+        service:    Math.max(Number(remote.breakdown?.service)||0,    local?.breakdown?.service||0),
+      }
+    };
   });
 
   // Restore activity log if local is empty
@@ -1801,9 +2099,11 @@ function renderAll() {
 // ══════════════════════════════════════════════════
 load();
 buildInputPage();
+setLogDateToday();
 renderAll();
 renderSystem();
 buildCoachEditor();
+updateAdminUI();
 setSyncStatus(scriptUrl ? 'ok' : 'off');
 isOnline = navigator.onLine;
 if (!isOnline) document.getElementById('offline-bar').classList.add('show');
